@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block contenido %}
+
+<!-- TOAST de mensajes mejorado -->
+{% if messages %}
+<div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;">
+  {% for message in messages %}
+  <div class="toast align-items-center text-bg-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+    <div class="d-flex">
+      <div class="toast-body d-flex align-items-center">
+        <i class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% elif message.tags == 'warning' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+        {{ message }}
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="container-fluid px-4 py-4">
+    <!-- Header de la Bitácora -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);">
+                <div class="card-body text-white py-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h1 class="mb-2 display-6 fw-bold">
+                                <i class="fas fa-clipboard-list me-3"></i>
+                                Bitácora del Sistema
+                            </h1>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-shield-alt me-2"></i>
+                                <span class="lead mb-0">Registro de Actividades del Sistema - Solo Superusuarios</span>
+                            </div>
+                        </div>
+                        <a href="{% url 'inicio' %}" class="btn btn-light btn-sm d-flex align-items-center shadow-sm">
+                            <i class="fas fa-arrow-left me-2"></i> Volver al Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-lg bg-primary text-white">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-white-50 mb-1">Total Registros</h6>
+                            <div class="stat-number fs-2 fw-bold">{{ total_registros }}</div>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-database fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-lg bg-success text-white">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-white-50 mb-1">Registros Hoy</h6>
+                            <div class="stat-number fs-2 fw-bold">{{ registros_hoy }}</div>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-day fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-lg bg-info text-white">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-white-50 mb-1">Acción Más Frecuente</h6>
+                            <div class="stat-number fs-5 fw-bold">
+                                {% if acciones_mas_frecuentes %}
+                                    {{ acciones_mas_frecuentes.0.accion|title }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-bar fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-lg bg-warning text-dark">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-dark-50 mb-1">Usuario Más Activo</h6>
+                            <div class="stat-number fs-5 fw-bold">
+                                {% if usuarios_activos %}
+                                    {{ usuarios_activos.0.usuario__username }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-user-tie fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-dark text-white border-0">
+                    <h5 class="mb-0">
+                        <i class="fas fa-filter me-2"></i>
+                        Filtros de Búsqueda
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="accion" class="fw-bold mb-2">Acción</label>
+                            <select class="form-select" id="accion" name="accion">
+                                <option value="">Todas las acciones</option>
+                                {% for value, label in accion_choices %}
+                                    <option value="{{ value }}" {% if filtros.accion == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="tipo_objeto" class="fw-bold mb-2">Tipo de Objeto</label>
+                            <select class="form-select" id="tipo_objeto" name="tipo_objeto">
+                                <option value="">Todos los tipos</option>
+                                {% for value, label in tipo_objeto_choices %}
+                                    <option value="{{ value }}" {% if filtros.tipo_objeto == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="usuario" class="fw-bold mb-2">Usuario</label>
+                            <input type="text" class="form-control" id="usuario" name="usuario" 
+                                   placeholder="Nombre de usuario" value="{{ filtros.usuario }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="fecha_desde" class="fw-bold mb-2">Fecha Desde</label>
+                            <input type="date" class="form-control" id="fecha_desde" name="fecha_desde" 
+                                   value="{{ filtros.fecha_desde }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="fecha_hasta" class="fw-bold mb-2">Fecha Hasta</label>
+                            <input type="date" class="form-control" id="fecha_hasta" name="fecha_hasta" 
+                                   value="{{ filtros.fecha_hasta }}">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <div class="d-flex gap-2 w-100">
+                                <button type="submit" class="btn btn-primary flex-fill">
+                                    <i class="fas fa-search me-1"></i> Filtrar
+                                </button>
+                                <a href="{% url 'bitacora_sistema' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-1"></i> Limpiar
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Registros -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-secondary text-white border-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>
+                            Registros de Actividad
+                            <span class="badge bg-light text-dark ms-2">{{ page_obj.paginator.count }} registros</span>
+                        </h5>
+                        <small class="text-white-50">
+                            <i class="fas fa-sort-down me-1"></i>
+                            Ordenado por fecha (más reciente primero)
+                        </small>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if page_obj %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th class="text-nowrap">
+                                            <i class="fas fa-calendar-alt me-1"></i>Fecha/Hora
+                                            <i class="fas fa-sort-down ms-1 text-warning" title="Ordenado por fecha descendente (más reciente primero)"></i>
+                                        </th>
+                                        <th><i class="fas fa-user me-1"></i>Usuario</th>
+                                        <th><i class="fas fa-bolt me-1"></i>Acción</th>
+                                        <th><i class="fas fa-cube me-1"></i>Tipo</th>
+                                        <th><i class="fas fa-info-circle me-1"></i>Descripción</th>
+                                        <th><i class="fas fa-globe me-1"></i>IP</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for registro in page_obj %}
+                                    <tr class="bitacora-row">
+                                        <td class="text-nowrap">
+                                            <div class="d-flex flex-column">
+                                                <span class="fw-bold text-primary">{{ registro.fecha_hora|date:"d/m/Y" }}</span>
+                                                <small class="text-muted font-monospace">{{ registro.fecha_hora|time:"H:i:s" }}</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-user-circle text-primary me-2"></i>
+                                                <span class="fw-semibold">{{ registro.usuario.username }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{% if registro.accion == 'crear' %}success{% elif registro.accion == 'editar' %}warning{% elif registro.accion == 'eliminar' %}danger{% elif registro.accion == 'acceder' %}info{% else %}secondary{% endif %} px-3 py-2">
+                                                <i class="fas fa-{% if registro.accion == 'crear' %}plus{% elif registro.accion == 'editar' %}edit{% elif registro.accion == 'eliminar' %}trash{% elif registro.accion == 'acceder' %}sign-in-alt{% else %}cog{% endif %} me-1"></i>
+                                                {{ registro.get_accion_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary px-3 py-2">
+                                                <i class="fas fa-{% if registro.tipo_objeto == 'encuesta' %}poll{% elif registro.tipo_objeto == 'encuestado' %}users{% elif registro.tipo_objeto == 'pregunta' %}question-circle{% elif registro.tipo_objeto == 'respuesta' %}file-text{% elif registro.tipo_objeto == 'fotografia' %}camera{% elif registro.tipo_objeto == 'usuario' %}user{% elif registro.tipo_objeto == 'sistema' %}cogs{% elif registro.tipo_objeto == 'base_datos' %}database{% else %}cube{% endif %} me-1"></i>
+                                                {{ registro.get_tipo_objeto_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="descripcion-container">
+                                                <span class="descripcion-texto">{{ registro.descripcion }}</span>
+                                                {% if registro.objeto_nombre %}
+                                                    <br><small class="text-muted">
+                                                        <i class="fas fa-tag me-1"></i>{{ registro.objeto_nombre }}
+                                                    </small>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if registro.ip_address %}
+                                                <span class="font-monospace">{{ registro.ip_address }}</span>
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Paginación -->
+                        {% if page_obj.has_other_pages %}
+                        <div class="card-footer bg-light border-0">
+                            <nav aria-label="Navegación de páginas">
+                                <ul class="pagination justify-content-center mb-0">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.accion %}&accion={{ request.GET.accion }}{% endif %}{% if request.GET.tipo_objeto %}&tipo_objeto={{ request.GET.tipo_objeto }}{% endif %}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}{% if request.GET.fecha_desde %}&fecha_desde={{ request.GET.fecha_desde }}{% endif %}{% if request.GET.fecha_hasta %}&fecha_hasta={{ request.GET.fecha_hasta }}{% endif %}">
+                                                <i class="fas fa-chevron-left"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+
+                                    {% for num in page_obj.paginator.page_range %}
+                                        {% if page_obj.number == num %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ num }}</span>
+                                            </li>
+                                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ num }}{% if request.GET.accion %}&accion={{ request.GET.accion }}{% endif %}{% if request.GET.tipo_objeto %}&tipo_objeto={{ request.GET.tipo_objeto }}{% endif %}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}{% if request.GET.fecha_desde %}&fecha_desde={{ request.GET.fecha_desde }}{% endif %}{% if request.GET.fecha_hasta %}&fecha_hasta={{ request.GET.fecha_hasta }}{% endif %}">{{ num }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.accion %}&accion={{ request.GET.accion }}{% endif %}{% if request.GET.tipo_objeto %}&tipo_objeto={{ request.GET.tipo_objeto }}{% endif %}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}{% if request.GET.fecha_desde %}&fecha_desde={{ request.GET.fecha_desde }}{% endif %}{% if request.GET.fecha_hasta %}&fecha_hasta={{ request.GET.fecha_hasta }}{% endif %}">
+                                                <i class="fas fa-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-clipboard-list text-muted mb-3" style="font-size: 4rem;"></i>
+                            <h5 class="text-muted">No se encontraron registros</h5>
+                            <p class="text-muted">No hay actividades registradas con los filtros aplicados.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Estilos para la bitácora */
+.bitacora-row {
+    transition: all 0.2s ease;
+}
+
+.bitacora-row:hover {
+    background-color: #f8f9fa;
+    transform: translateX(2px);
+}
+
+.descripcion-container {
+    max-width: 300px;
+    word-wrap: break-word;
+}
+
+.descripcion-texto {
+    display: block;
+    line-height: 1.4;
+}
+
+.stat-icon {
+    opacity: 0.7;
+}
+
+.badge {
+    transition: all 0.2s ease;
+}
+
+.badge:hover {
+    transform: scale(1.05);
+}
+
+.page-link {
+    transition: all 0.2s ease;
+}
+
+.page-link:hover {
+    transform: translateY(-1px);
+}
+
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .descripcion-container {
+        max-width: 200px;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem !important;
+    }
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Mostrar toasts
+    var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+    toastElList.forEach(function(toastEl) {
+        var toast = new bootstrap.Toast(toastEl);
+        toast.show();
+    });
+});
+</script>
+
+{% endblock %}

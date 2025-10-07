@@ -1,0 +1,513 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block css %}
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+
+    .stat-card {
+        border: none;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        overflow: hidden;
+        position: relative;
+        background: white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(90deg, var(--card-color-1), var(--card-color-2));
+    }
+
+    .stat-card.encuestas {
+        --card-color-1: #667eea;
+        --card-color-2: #764ba2;
+    }
+
+    .stat-card.encuestados {
+        --card-color-1: #f093fb;
+        --card-color-2: #f5576c;
+    }
+
+    .stat-card.comunidades {
+        --card-color-1: #4facfe;
+        --card-color-2: #00f2fe;
+    }
+
+    .stat-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+        background: linear-gradient(135deg, var(--card-color-1), var(--card-color-2));
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--card-color-1), var(--card-color-2));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .chart-card {
+        border: none;
+        border-radius: 15px;
+        background: white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+    }
+
+    .chart-card:hover {
+        box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+    }
+
+    .chart-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+        padding: 1rem;
+    }
+
+    .chart-container-large {
+        position: relative;
+        height: 400px;
+        padding: 1rem;
+    }
+
+    .pulse-animation {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    .badge-custom {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .trend-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        background: #d4edda;
+        color: #155724;
+    }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<div class="container-fluid px-4 py-4">
+    <!-- Header Dashboard -->
+    <div class="dashboard-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2"><i class="bi bi-speedometer2 me-2"></i>Panel de Control</h1>
+                <p class="mb-0 opacity-75">Bienvenido al sistema de gestión de encuestas CORFALMI</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="badge-custom bg-white text-dark">
+                    <i class="bi bi-calendar-event me-2"></i>
+                    <span id="currentDate"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tarjetas de Estadísticas -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card encuestas">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Encuestas</h6>
+                            <div class="stat-number">{{ total_encuestas }}</div>
+                        </div>
+                        <div class="stat-icon pulse-animation">
+                            <i class="bi bi-file-earmark-text"></i>
+                        </div>
+                    </div>
+                    <div class="trend-indicator">
+                        <i class="bi bi-arrow-up"></i>
+                        <span>Activas</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="stat-card encuestados">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Encuestados</h6>
+                            <div class="stat-number">{{ total_encuestados }}</div>
+                        </div>
+                        <div class="stat-icon pulse-animation">
+                            <i class="bi bi-people"></i>
+                        </div>
+                    </div>
+                    <div class="trend-indicator">
+                        <i class="bi bi-arrow-up"></i>
+                        <span>Registrados</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="stat-card comunidades">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Comunidades</h6>
+                            <div class="stat-number">{{ total_comunidades }}</div>
+                        </div>
+                        <div class="stat-icon pulse-animation">
+                            <i class="bi bi-geo-alt"></i>
+                        </div>
+                    </div>
+                    <div class="trend-indicator">
+                        <i class="bi bi-arrow-up"></i>
+                        <span>Activas</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficas Principales -->
+    <div class="row g-4 mb-4">
+        <!-- Gráfica de Líneas - Tendencia -->
+        <div class="col-lg-8">
+            <div class="chart-card">
+                <div class="card-body">
+                    <h5 class="chart-title">
+                        <i class="bi bi-graph-up text-primary me-2"></i>
+                        Tendencia de Registros (Últimos 30 días)
+                    </h5>
+                    <div class="chart-container-large">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfica de Dona - Distribución -->
+        <div class="col-lg-4">
+            <div class="chart-card">
+                <div class="card-body">
+                    <h5 class="chart-title">
+                        <i class="bi bi-pie-chart text-success me-2"></i>
+                        Distribución Total
+                    </h5>
+                    <div class="chart-container">
+                        <canvas id="distributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficas Secundarias -->
+    <div class="row g-4">
+        <!-- Gráfica de Barras - Encuestas -->
+        <div class="col-lg-4">
+            <div class="chart-card">
+                <div class="card-body">
+                    <h5 class="chart-title">
+                        <i class="bi bi-bar-chart text-info me-2"></i>
+                        Encuestas por Semana
+                    </h5>
+                    <div class="chart-container">
+                        <canvas id="encuestasBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfica de Área - Encuestados -->
+        <div class="col-lg-4">
+            <div class="chart-card">
+                <div class="card-body">
+                    <h5 class="chart-title">
+                        <i class="bi bi-activity text-danger me-2"></i>
+                        Encuestados por Semana
+                    </h5>
+                    <div class="chart-container">
+                        <canvas id="encuestadosAreaChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfica Polar - Comunidades -->
+        <div class="col-lg-4">
+            <div class="chart-card">
+                <div class="card-body">
+                    <h5 class="chart-title">
+                        <i class="bi bi-radar text-warning me-2"></i>
+                        Comunidades por Semana
+                    </h5>
+                    <div class="chart-container">
+                        <canvas id="comunidadesPolarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Mostrar fecha actual
+    document.getElementById('currentDate').textContent = new Date().toLocaleDateString('es-VE', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    // Datos del backend
+    const labels = {{ labels_grafico|safe }};
+    const dataEncuestas = {{ data_encuestas|safe }};
+    const dataEncuestados = {{ data_encuestados|safe }};
+    const dataComunidades = {{ data_comunidades|safe }};
+
+    // Configuración de colores
+    const colors = {
+        encuestas: { gradient1: '#667eea', gradient2: '#764ba2' },
+        encuestados: { gradient1: '#f093fb', gradient2: '#f5576c' },
+        comunidades: { gradient1: '#4facfe', gradient2: '#00f2fe' }
+    };
+
+    // 1. Gráfica de Tendencia (Líneas)
+    const trendCtx = document.getElementById('trendChart').getContext('2d');
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Encuestas',
+                    data: dataEncuestas,
+                    borderColor: colors.encuestas.gradient1,
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: colors.encuestas.gradient1,
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                },
+                {
+                    label: 'Encuestados',
+                    data: dataEncuestados,
+                    borderColor: colors.encuestados.gradient1,
+                    backgroundColor: 'rgba(240, 147, 251, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: colors.encuestados.gradient1,
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                },
+                {
+                    label: 'Comunidades',
+                    data: dataComunidades,
+                    borderColor: colors.comunidades.gradient1,
+                    backgroundColor: 'rgba(79, 172, 254, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: colors.comunidades.gradient1,
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: { usePointStyle: true, padding: 20, font: { size: 12, weight: '600' } }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    titleFont: { size: 14, weight: 'bold' },
+                    bodyFont: { size: 13 }
+                }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(0, 0, 0, 0.05)' } },
+                x: { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } } }
+            }
+        }
+    });
+
+    // 2. Gráfica de Distribución (Dona)
+    const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+    new Chart(distributionCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Encuestas', 'Encuestados', 'Comunidades'],
+            datasets: [{
+                data: [{{ total_encuestas }}, {{ total_encuestados }}, {{ total_comunidades }}],
+                backgroundColor: [colors.encuestas.gradient1, colors.encuestados.gradient1, colors.comunidades.gradient1],
+                borderWidth: 0,
+                hoverOffset: 15
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { padding: 15, usePointStyle: true, font: { size: 12, weight: '600' } } },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.parsed / total) * 100).toFixed(1);
+                            return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // 3. Gráfica de Barras - Encuestas
+    const encuestasBarCtx = document.getElementById('encuestasBarChart').getContext('2d');
+    new Chart(encuestasBarCtx, {
+        type: 'bar',
+        data: {
+            labels: labels.slice(-7),
+            datasets: [{
+                label: 'Encuestas',
+                data: dataEncuestas.slice(-7),
+                backgroundColor: colors.encuestas.gradient1,
+                borderRadius: 8,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(0, 0, 0, 0.8)', padding: 10 } },
+            scales: { y: { beginAtZero: true, grid: { color: 'rgba(0, 0, 0, 0.05)' } }, x: { grid: { display: false } } }
+        }
+    });
+
+    // 4. Gráfica de Área - Encuestados
+    const encuestadosAreaCtx = document.getElementById('encuestadosAreaChart').getContext('2d');
+    new Chart(encuestadosAreaCtx, {
+        type: 'line',
+        data: {
+            labels: labels.slice(-7),
+            datasets: [{
+                label: 'Encuestados',
+                data: dataEncuestados.slice(-7),
+                backgroundColor: 'rgba(240, 147, 251, 0.3)',
+                borderColor: colors.encuestados.gradient1,
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 5,
+                pointBackgroundColor: colors.encuestados.gradient1,
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(0, 0, 0, 0.8)', padding: 10 } },
+            scales: { y: { beginAtZero: true, grid: { color: 'rgba(0, 0, 0, 0.05)' } }, x: { grid: { display: false } } }
+        }
+    });
+
+    // 5. Gráfica Polar - Comunidades
+    const comunidadesPolarCtx = document.getElementById('comunidadesPolarChart').getContext('2d');
+    new Chart(comunidadesPolarCtx, {
+        type: 'polarArea',
+        data: {
+            labels: labels.slice(-7),
+            datasets: [{
+                data: dataComunidades.slice(-7),
+                backgroundColor: [
+                    'rgba(79, 172, 254, 0.7)', 'rgba(79, 172, 254, 0.6)', 'rgba(79, 172, 254, 0.5)',
+                    'rgba(79, 172, 254, 0.4)', 'rgba(79, 172, 254, 0.3)', 'rgba(79, 172, 254, 0.2)', 'rgba(79, 172, 254, 0.1)'
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { padding: 10, font: { size: 10 } } },
+                tooltip: { backgroundColor: 'rgba(0, 0, 0, 0.8)', padding: 10 }
+            },
+            scales: { r: { beginAtZero: true, grid: { color: 'rgba(0, 0, 0, 0.05)' } } }
+        }
+    });
+</script>
+{% endblock %}

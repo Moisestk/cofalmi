@@ -1,0 +1,667 @@
+{% extends "base.html" %}
+{% load static %}
+{% block contenido %}
+
+<!-- TOAST de mensajes mejorado -->
+{% if messages %}
+<div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;">
+  {% for message in messages %}
+  <div class="toast align-items-center text-bg-success border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+    <div class="d-flex">
+      <div class="toast-body d-flex align-items-center">
+        <i class="fas fa-check-circle me-2"></i>
+        {{ message }}
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+<div class="container-fluid px-4 py-4">
+    <!-- Header de la encuesta -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, #0a58ca);">
+                <div class="card-body text-white py-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h1 class="mb-2 display-6 fw-bold">
+                                <i class="fas fa-file-alt me-3"></i>
+                                {{ encuesta.titulo }}
+                            </h1>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <span class="lead mb-0">Detalles y Gestión de Encuesta</span>
+                            </div>
+                        </div>
+                        <a href="{% url 'listar_encuestas' %}" class="btn btn-light btn-sm d-flex align-items-center shadow-sm">
+                            <i class="fas fa-arrow-left me-2"></i> Volver
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Panel de detalles -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white border-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Detalles de la Encuesta
+                        </h5>
+                        <button type="button" class="btn btn-light btn-sm d-flex align-items-center"
+                                data-bs-toggle="modal" data-bs-target="#modalAgregarFotografia"
+                                title="Añadir fotografía">
+                            <i class="fas fa-camera me-1"></i>
+                            <span class="badge bg-primary rounded-circle ms-1" style="font-size: 0.7em;">
+                                <i class="fas fa-plus"></i>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-1">Título</h6>
+                        <p class="fw-bold mb-0">{{ encuesta.titulo }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-1">Descripción</h6>
+                        {% if encuesta.descripcion|length > 200 %}
+                        <p class="mb-2">
+                            {{ encuesta.descripcion|slice:":200" }}...
+                            <span id="btnVerMasDescripcion"
+                                role="button"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalDescripcionCompleta"
+                                class="text-primary fw-bold" style="cursor: pointer;">
+                                Ver más
+                            </span>
+                        </p>
+                        {% else %}
+                        <p class="mb-2">{{ encuesta.descripcion }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded-3">
+                                <i class="fas fa-calendar-alt text-primary mb-2" style="font-size: 1.5rem;"></i>
+                                <h6 class="text-muted mb-1">Inicio</h6>
+                                <p class="fw-bold mb-0">{{ encuesta.fecha_creacion|date:"d M, Y" }}</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded-3">
+                                <i class="fas fa-calendar-check text-success mb-2" style="font-size: 1.5rem;"></i>
+                                <h6 class="text-muted mb-1">Fin</h6>
+                                <p class="fw-bold mb-0">{{ encuesta.fecha_finalizacion|date:"d M, Y" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mt-3">
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded-3">
+                                <i class="fas fa-users text-info mb-2" style="font-size: 1.5rem;"></i>
+                                <h6 class="text-muted mb-1">Respuestas</h6>
+                                <p class="fw-bold mb-0">{{ detalles|length }}</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded-3">
+                                <i class="fas fa-images text-warning mb-2" style="font-size: 1.5rem;"></i>
+                                <h6 class="text-muted mb-1">Fotografías</h6>
+                                <p class="fw-bold mb-0">{{ encuesta.fotografias.count }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel del cuestionario -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-success text-white border-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list-ul me-2"></i>
+                            Cuestionario
+                        </h5>
+                        <div class="d-flex gap-2">
+                            {% if not encuesta.fecha_finalizacion_date or encuesta.fecha_finalizacion_date > today %}
+                                <button type="button" class="btn btn-light btn-sm d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#modalPregunta">
+                                    <i class="fas fa-plus me-1"></i> Nueva Pregunta
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div id="bloque-cuestionario">
+                        {% for pregunta in preguntas %}
+                        <div class="pregunta-card mb-4 border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-start">
+                                    <div class="pregunta-numero me-3">
+                                        <span class="badge bg-primary rounded-pill fs-6 px-3 py-2">{{ forloop.counter }}</span>
+                                    </div>
+                                    <div class="pregunta-contenido flex-grow-1">
+                                        <h5 class="fw-bold text-dark mb-3">
+                                            {{ pregunta.texto_pregunta }}
+                                        </h5>
+                                        
+                                        <!-- Badge del tipo de respuesta -->
+                                        <div class="mb-3">
+                                            <span class="badge bg-info text-white px-3 py-2 rounded-pill">
+                                                <i class="fas fa-{% if pregunta.tipo_respuesta == 'opcion_unica' %}dot-circle{% elif pregunta.tipo_respuesta == 'opcion_multiple' %}check-square{% elif pregunta.tipo_respuesta == 'si_no' %}question-circle{% else %}edit{% endif %} me-1"></i>
+                                                {% if pregunta.tipo_respuesta == "opcion_unica" %}
+                                                    Opción Única
+                                                {% elif pregunta.tipo_respuesta == "opcion_multiple" %}
+                                                    Opción Múltiple
+                                                {% elif pregunta.tipo_respuesta == "si_no" %}
+                                                    Sí o No
+                                                {% else %}
+                                                    {{ pregunta.tipo_respuesta|title }}
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                        
+                                        <!-- Opciones -->
+                                        {% if pregunta.opciones.all %}
+                                            <div class="opciones-container">
+                                                {% for opcion in pregunta.opciones.all %}
+                                                    <div class="opcion-item p-3 border rounded-3 mb-2 bg-light">
+                                                        <i class="fas fa-circle text-muted me-2" style="font-size: 0.5rem;"></i>
+                                                        <span class="fw-semibold">{{ opcion.texto_opcion }}</span>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        {% elif pregunta.tipo_respuesta == "si_no" %}
+                                            <div class="row g-2">
+                                                <div class="col-6">
+                                                    <div class="p-3 border rounded-3 bg-light text-center">
+                                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                                        <span class="fw-semibold">Sí</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="p-3 border rounded-3 bg-light text-center">
+                                                        <i class="fas fa-times-circle text-danger me-2"></i>
+                                                        <span class="fw-semibold">No</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Botones de acción -->
+                                    <div class="d-flex flex-column gap-2 ms-3">
+                                        {% if encuesta.fecha_finalizacion_date and encuesta.fecha_finalizacion_date <= today %}
+                                            <button type="button" class="btn btn-info btn-sm d-flex align-items-center btnDetallesPregunta" data-pregunta-id="{{ pregunta.id }}">
+                                                <i class="fas fa-chart-bar me-1"></i>
+                                                <span>Detalles</span>
+                                            </button>
+                                        {% else %}
+                                            <button type="button" class="btn btn-danger btn-sm d-flex align-items-center btnEliminarPregunta"
+                                                data-pregunta-id="{{ pregunta.id }}"
+                                                data-texto="{{ pregunta.texto_pregunta }}"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalEliminarPregunta">
+                                                <i class="fas fa-trash me-1"></i>
+                                                <span>Eliminar</span>
+                                            </button>
+                                            <button type="button" class="btn btn-warning btn-sm d-flex align-items-center btnEditarPregunta" data-pregunta-id="{{ pregunta.id }}">
+                                                <i class="fas fa-edit me-1"></i>
+                                                <span>Editar</span>
+                                            </button>
+                                            <button type="button" class="btn btn-info btn-sm d-flex align-items-center btnDetallesPregunta" data-pregunta-id="{{ pregunta.id }}">
+                                                <i class="fas fa-chart-bar me-1"></i>
+                                                <span>Detalles</span>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-question-circle text-muted mb-3" style="font-size: 4rem;"></i>
+                            <h5 class="text-muted">No hay preguntas registradas</h5>
+                            <p class="text-muted">Agrega la primera pregunta para comenzar</p>
+                            {% if not encuesta.fecha_finalizacion_date or encuesta.fecha_finalizacion_date > today %}
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalPregunta">
+                                    <i class="fas fa-plus me-2"></i>Agregar Primera Pregunta
+                                </button>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODALS FUERA DE MAIN-CONTENT -->
+
+
+<!-- Modal Descripción Completa -->
+<div class="modal fade" id="modalDescripcionCompleta" tabindex="-1" aria-labelledby="modalDescripcionCompletaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-primary text-white border-0">
+        <h5 class="modal-title d-flex align-items-center" id="modalDescripcionCompletaLabel">
+          <i class="fas fa-info-circle me-3 fs-4"></i>
+          <span>Descripción Completa</span>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="p-3 bg-light rounded-3">
+          <p class="mb-0" style="white-space: pre-wrap; word-break: break-word;">{{ encuesta.descripcion }}</p>
+        </div>
+      </div>
+      <div class="modal-footer border-0 justify-content-center">
+        <button type="button" class="btn btn-primary btn-lg px-4" data-bs-dismiss="modal">
+          <i class="fas fa-check me-2"></i>Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Agregar Fotografía -->
+<div class="modal fade" id="modalAgregarFotografia" tabindex="-1" aria-labelledby="modalAgregarFotografiaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-success text-white border-0">
+        <h5 class="modal-title d-flex align-items-center" id="modalAgregarFotografiaLabel">
+          <i class="fas fa-camera me-3 fs-4"></i>
+          <span>Agregar Fotografía</span>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <form id="formAgregarFoto" method="post" enctype="multipart/form-data" action="{% url 'agregar_foto_encuesta' encuesta.id %}">
+        {% csrf_token %}
+        <div class="modal-body p-4">
+          <div class="mb-4">
+            <div class="form-floating">
+              <input class="form-control form-control-lg" type="file" id="fotoEncuesta" name="fotos" accept="image/*" multiple required>
+              <label for="fotoEncuesta">
+                <i class="fas fa-images me-2"></i>Selecciona una o varias imágenes
+              </label>
+            </div>
+          </div>
+          <div id="previewFotos" class="d-flex flex-wrap gap-2"></div>
+        </div>
+        <div class="modal-footer border-0 justify-content-center">
+          <button type="submit" class="btn btn-success btn-lg px-4 me-2">
+            <i class="fas fa-upload me-2"></i> Subir
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-lg px-4" data-bs-dismiss="modal">
+            <i class="fas fa-times me-2"></i>Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Formato de Impresión -->
+<div class="modal fade" id="modalFormatoImpresion" tabindex="-1" aria-labelledby="modalFormatoImpresionLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalFormatoImpresionLabel">Imprimir o Guardar en PDF</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p>Elige el formato para imprimir o guardar la encuesta:</p>
+        <div class="mb-3">
+          <select class="form-select" id="formatoEncuesta">
+            <option value="clasico">Formato clásico</option>
+            <option value="compacto">Formato compacto</option>
+            <option value="respuestas">Solo preguntas y opciones</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para agregar nueva pregunta -->
+<div class="modal fade" id="modalPregunta" tabindex="-1" aria-labelledby="modalPreguntaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-primary text-white border-0">
+        <h5 class="modal-title d-flex align-items-center" id="modalPreguntaLabel">
+          <i class="fas fa-plus-circle me-3 fs-4"></i>
+          <span>Nueva Pregunta</span>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <form id="formNuevaPregunta" autocomplete="off">
+        {% csrf_token %}
+        <div class="modal-body p-4">
+          <div class="row align-items-start">
+            <div class="col-md-7">
+              <div class="mb-3">
+                <label for="texto_pregunta" class="fw-bold mb-2">Pregunta</label>
+                <div class="form-floating">
+                  <textarea class="form-control" id="texto_pregunta" name="texto_pregunta" rows="3" placeholder="Escribe tu pregunta aquí..." required></textarea>
+                  <label for="texto_pregunta">Escribe tu pregunta aquí...</label>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="tipo_respuesta" class="fw-bold mb-2">Tipo de respuesta</label>
+                <div class="form-floating">
+                  <select class="form-select" id="tipo_respuesta" name="tipo_respuesta" required>
+                    <option value="">Seleccione...</option>
+                    <option value="opcion_unica">Respuesta única</option>
+                    <option value="opcion_multiple">Opción múltiple</option>
+                    <option value="si_no">Sí/No</option>
+                  </select>
+                  <label for="tipo_respuesta">Tipo de respuesta</label>
+                </div>
+              </div>
+              <div class="mb-3" id="campo_texto_group" style="display:none;">
+                <div class="form-check p-3 border rounded-3">
+                  <input class="form-check-input" type="checkbox" id="requiere_campo_texto" name="requiere_campo_texto">
+                  <label class="form-check-label fw-semibold" for="requiere_campo_texto">
+                    Agregar campo de texto adicional (Ej: "Indique cuál")
+                  </label>
+                </div>
+                <div id="titulo_campo_texto_group" style="display:none;" class="mt-3">
+                  <div class="form-floating">
+                    <input type="text" class="form-control" id="titulo_campo_texto" name="titulo_campo_texto" placeholder="Ej: Indique cuál">
+                    <label for="titulo_campo_texto">Título del campo de texto</label>
+                  </div>
+                </div>
+              </div>
+              <div class="mb-3" id="opciones_group" style="display:none;">
+                <label class="fw-bold mb-2">Opciones:</label>
+                <div id="opciones_inputs"></div>
+                <button type="button" id="btnAgregarOpcion" class="btn btn-outline-primary btn-sm mt-2 d-flex align-items-center">
+                  <i class="fas fa-plus me-1"></i> Añadir opción
+                </button>
+              </div>
+            </div>
+            <div class="col-md-5">
+              <label class="fw-bold mb-2">Vista previa</label>
+              <div id="previewPregunta" class="border rounded-3 p-3 bg-light" style="min-height: 200px;">
+                <div class="text-center text-muted">
+                  <i class="fas fa-eye mb-2" style="font-size: 2rem;"></i>
+                  <p class="mb-0">Seleccione primero el tipo de pregunta y respuesta.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 justify-content-center">
+          <button type="button" id="btnLimpiar" class="btn btn-outline-secondary btn-lg px-4 me-2">
+            <i class="fas fa-broom me-2"></i>Limpiar
+          </button>
+          <button type="submit" class="btn btn-primary btn-lg px-4 me-2"
+              {% if encuesta.fecha_finalizacion_date and encuesta.fecha_finalizacion_date <= today %}disabled{% endif %}>
+              <i class="fas fa-save me-2"></i>Guardar
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-lg px-4" data-bs-dismiss="modal">
+            <i class="fas fa-times me-2"></i>Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Pregunta -->
+<div class="modal fade" id="modalEditarPregunta" tabindex="-1" aria-labelledby="modalEditarPreguntaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-warning text-dark border-0">
+        <h5 class="modal-title d-flex align-items-center" id="modalEditarPreguntaLabel">
+          <i class="fas fa-edit me-3 fs-4"></i>
+          <span>Editar Pregunta</span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <form id="formEditarPregunta" autocomplete="off">
+        {% csrf_token %}
+        <div class="modal-body">
+          <input type="hidden" id="editar_pregunta_id" name="pregunta_id">
+          <div class="mb-3">
+            <label for="editar_texto_pregunta" class="form-label">Pregunta</label>
+            <textarea class="form-control" id="editar_texto_pregunta" name="texto_pregunta" rows="3" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="editar_tipo_respuesta" class="form-label">Tipo de respuesta</label>
+            <select class="form-select" id="editar_tipo_respuesta" name="tipo_respuesta" required>
+              <option value="">Seleccione...</option>
+              <option value="opcion_unica">Respuesta única</option>
+              <option value="opcion_multiple">Opción múltiple</option>
+              <option value="si_no">Sí/No</option>
+            </select>
+          </div>
+          <div class="mb-3" id="editar_campo_texto_group" style="display:none;">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="editar_requiere_campo_texto" name="requiere_campo_texto">
+              <label class="form-check-label" for="editar_requiere_campo_texto">
+                Agregar campo de texto adicional (Ej: "Indique cuál")
+              </label>
+            </div>
+            <div id="editar_titulo_campo_texto_group" style="display:none;" class="mt-2">
+              <label for="editar_titulo_campo_texto" class="form-label">Título del campo de texto:</label>
+              <input type="text" class="form-control" id="editar_titulo_campo_texto" name="titulo_campo_texto" placeholder="Ej: Indique cuál">
+            </div>
+          </div>
+          <div class="mb-3" id="editar_opciones_group" style="display:none;">
+            <label>Opciones:</label>
+            <div id="editar_opciones_inputs"></div>
+            <button type="button" id="btnEditarAgregarOpcion" class="btn btn-outline-primary btn-sm mt-2">+ Añadir opción</button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary"
+              {% if encuesta.fecha_finalizacion_date and encuesta.fecha_finalizacion_date <= today %}disabled{% endif %}>
+              Guardar cambios
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detalles Pregunta -->
+<div class="modal fade" id="modalDetallesPregunta" tabindex="-1" aria-labelledby="modalDetallesPreguntaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-info text-white border-0 d-flex justify-content-between align-items-center">
+        <h5 class="modal-title mb-0 d-flex align-items-center" id="modalDetallesPreguntaLabel">
+          <i class="fas fa-chart-bar me-3 fs-4"></i>
+          <span>Detalles de la Pregunta</span>
+        </h5>
+        <div>
+          <button id="btnExportarGrafica" class="btn btn-outline-success btn-sm rounded-circle ms-2" title="Descargar gráfica">
+            <i class="fa fa-download"></i>
+          </button>
+          <button type="button" class="btn-close btn-close-white ms-2" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <canvas id="graficaOpciones" width="400" height="200"></canvas>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Eliminar Pregunta -->
+<div class="modal fade" id="modalEliminarPregunta" tabindex="-1" aria-labelledby="modalEliminarPreguntaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <form id="formEliminarPregunta" method="post">
+        {% csrf_token %}
+        <input type="hidden" id="inputEliminarPreguntaId" name="pregunta_id">
+        <div class="modal-header bg-danger text-white border-0">
+          <h5 class="modal-title d-flex align-items-center" id="modalEliminarPreguntaLabel">
+            <i class="fas fa-exclamation-triangle me-3 fs-4"></i>
+            <span>Confirmar Eliminación</span>
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body text-center py-4">
+          <div class="mb-4">
+            <i class="fas fa-trash-alt text-danger" style="font-size: 3rem;"></i>
+          </div>
+          <h6 class="fw-bold text-dark mb-3">¿Estás seguro de eliminar esta pregunta?</h6>
+          <p class="text-muted mb-4">
+            Esta acción no se puede deshacer. Se eliminará la pregunta:
+            <br><strong id="modal-eliminar-texto" class="text-dark"></strong>
+          </p>
+        </div>
+        <div class="modal-footer border-0 justify-content-center">
+          <button type="button" class="btn btn-outline-secondary btn-lg px-4 me-2" data-bs-dismiss="modal">
+            <i class="fas fa-times me-2"></i>Cancelar
+          </button>
+          <button type="submit" class="btn btn-danger btn-lg px-4">
+            <i class="fas fa-trash me-2"></i>Eliminar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Datos ocultos del encuestado para impresión -->
+<div id="datos-encuestado" style="display:none;">
+    <span class="nombre">{{ encuestado.nombre }}</span>
+    <span class="cedula">{{ encuestado.cedula }}</span>
+    <span class="ubicacion">{{ encuestado.ubicacion_administrativa }}</span>
+    <span class="cargo">{{ encuestado.cargo }}</span>
+    <span class="direccion">{{ encuestado.direccion }}</span>
+    <span class="telefono">{{ encuestado.telefono }}</span>
+</div>
+
+<script>
+    window.DETALLE_ENCUESTA_URLS = {
+        agregar_pregunta: "{% url 'agregar_pregunta' encuesta.id %}",
+        eliminar_pregunta: "{% url 'eliminar_pregunta' %}",
+        obtener_pregunta: "{% url 'obtener_pregunta' %}",
+        editar_pregunta_ajax: "{% url 'editar_pregunta_ajax' %}",
+        detalles_pregunta: "{% url 'detalles_pregunta' %}",
+        csrf_token: "{{ csrf_token }}"
+    };
+    window.ENCUESTA_IMPRESION = {
+        titulo: "{{ encuesta.titulo|escapejs }}",
+        descripcion: "{{ encuesta.descripcion|escapejs }}"
+    };
+</script>
+
+
+
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/detalle_encuesta.css' %}">
+
+<style>
+/* Estilos mejorados para detalle_encuesta */
+.pregunta-card {
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.pregunta-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.opcion-item {
+    transition: all 0.2s ease;
+}
+
+.opcion-item:hover {
+    background-color: #e9ecef !important;
+    border-color: #0d6efd !important;
+}
+
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.card {
+    transition: all 0.3s ease;
+}
+
+.modal-content {
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.badge {
+    transition: all 0.2s ease;
+}
+
+.badge:hover {
+    transform: scale(1.05);
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-select:focus ~ label {
+    color: #0d6efd;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .pregunta-card .d-flex {
+        flex-direction: column;
+    }
+    
+    .pregunta-numero {
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}
+{% block scripts %}
+<script>
+$(document).ready(function() {
+  var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+  toastElList.forEach(function(toastEl) {
+    var toast = new bootstrap.Toast(toastEl);
+    toast.show();
+  });
+});
+</script>
+<script src="{% static 'js/jquery-3.7.0.min.js' %}"></script>
+<script src="{% static 'js/chart.js' %}"></script>
+<script src="{% static 'js/chartjs-plugin-datalabels.js' %}"></script>
+<script src="{% static 'js/detalle_encuesta.js' %}"></script>
+{% endblock %}

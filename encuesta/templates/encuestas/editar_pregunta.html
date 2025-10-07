@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load form_tags %}
+{% block contenido %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h2>Editar Pregunta</h2>
+            <p class="mb-0"><strong>Encuesta:</strong> {{ encuesta.titulo }}</p>
+        </div>
+        <div class="card-body">
+            <form method="POST" class="row g-3">
+                {% csrf_token %}
+                <div class="col-12">
+                    <label for="texto_pregunta">Texto de la Pregunta:</label>
+                    {{ form.texto_pregunta|add_class:"form-control" }}
+                    {{ form.texto_pregunta.errors }}
+                </div>
+                <div class="col-12">
+                    <label for="tipo_respuesta">Tipo de Respuesta:</label>
+                    {{ form.tipo_respuesta|add_class:"form-control" }}
+                    {{ form.tipo_respuesta.errors }}
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    <a href="{% url 'detalle_encuesta' encuesta.id_encuesta %}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var tipoRespuesta = document.getElementById('id_tipo_respuesta');
+        var detalleDiv = document.getElementById('detalle-respuesta-div');
+        if (tipoRespuesta) {
+            tipoRespuesta.addEventListener('change', function() {
+                if (tipoRespuesta.value === 'Sí' || tipoRespuesta.value === 'si' || tipoRespuesta.value === '1') {
+                    detalleDiv.style.display = 'block';
+                } else {
+                    detalleDiv.style.display = 'none';
+                }
+            });
+            // Trigger on load in case of edit
+            if (tipoRespuesta.value === 'Sí' || tipoRespuesta.value === 'si' || tipoRespuesta.value === '1') {
+                detalleDiv.style.display = 'block';
+            }
+        }
+    });
+</script>
+{% endblock %}

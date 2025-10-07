@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block css %}
+<link href="{% static 'css/inicio.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block contenido %}
+<div class="container-fluid px-4 py-4">
+    <!-- Header Dashboard -->
+    <div class="dashboard-header fade-in-up">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="dashboard-title">
+                        <i class="bi bi-speedometer2 me-3"></i>
+                        INICIO
+                    </h1>
+                    <p class="dashboard-subtitle">Bienvenido al sistema de gestión de encuestas CORFALMI</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="badge-custom">
+                        <i class="bi bi-calendar-event me-2"></i>
+                        <span id="currentDate"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tarjetas de Estadísticas -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-4 col-md-6">
+            <div class="stat-card encuestas fade-in-up">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="stat-title mb-0">Total Encuestas</h6>
+                            <div class="stat-icon pulse-animation">
+                                <i class="bi bi-file-earmark-text"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="stat-number counter" data-target="{{ total_encuestas }}">0</div>
+                        <div class="trend-indicator">
+                            <i class="bi bi-arrow-up"></i>
+                            <span>Activas</span>
+                        </div>
+                        <div class="progress mt-3">
+                            <div class="progress-bar" style="width: 85%; background: linear-gradient(135deg, #0a58ca);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="stat-card encuestados fade-in-up">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="stat-title mb-0">Total Encuestados</h6>
+                            <div class="stat-icon pulse-animation">
+                                <i class="bi bi-people"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="stat-number counter" data-target="{{ total_encuestados }}">0</div>
+                        <div class="trend-indicator">
+                            <i class="bi bi-arrow-up"></i>
+                            <span>Registrados</span>
+                        </div>
+                        <div class="progress mt-3">
+                            <div class="progress-bar" style="width: 72%; background: linear-gradient(135deg, #0a58ca);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="stat-card fotografias fade-in-up">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="stat-title mb-0">Total Fotografías</h6>
+                            <div class="stat-icon pulse-animation">
+                                <i class="bi bi-camera"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="stat-number counter" data-target="{{ total_fotografias }}">0</div>
+                        <div class="trend-indicator">
+                            <i class="bi bi-arrow-up"></i>
+                            <span>Subidas</span>
+                        </div>
+                        <div class="progress mt-3">
+                            <div class="progress-bar" style="width: 68%; background: linear-gradient(135deg, #0a58ca);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficas Principales -->
+    <div class="row g-4 mb-4">
+        <!-- Gráfica de Líneas - Tendencia Principal -->
+        <div class="col-lg-8">
+            <div class="chart-card fade-in-up">
+                <div class="chart-header">
+                    <h5 class="chart-title">
+                        <i class="bi bi-graph-up text-primary me-2"></i>
+                        Tendencia de Actividad (Últimos 30 días)
+                    </h5>
+                </div>
+                <div class="chart-container-large">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfica de Dona - Distribución -->
+        <div class="col-lg-4">
+            <div class="chart-card fade-in-up">
+                <div class="chart-header">
+                    <h5 class="chart-title">
+                        <i class="bi bi-pie-chart text-success me-2"></i>
+                        Distribución del Sistema
+                    </h5>
+                </div>
+                <div class="chart-container">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficas Secundarias -->
+    <div class="row g-4">
+        <!-- Gráfica de Barras - Encuestas -->
+        <div class="col-lg-6">
+            <div class="chart-card fade-in-up">
+                <div class="chart-header">
+                    <h5 class="chart-title">
+                        <i class="bi bi-bar-chart text-info me-2"></i>
+                        Encuestas por Semana
+                    </h5>
+                </div>
+                <div class="chart-container">
+                    <canvas id="encuestasBarChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfica de Área - Encuestados -->
+        <div class="col-lg-6">
+            <div class="chart-card fade-in-up">
+                <div class="chart-header">
+                    <h5 class="chart-title">
+                        <i class="bi bi-activity text-danger me-2"></i>
+                        Encuestados por Semana
+                    </h5>
+                </div>
+                <div class="chart-container">
+                    <canvas id="encuestadosAreaChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección de Acciones Rápidas -->
+    <div class="row g-4 mt-4">
+        <div class="col-12">
+            <div class="quick-actions-card fade-in-up">
+                <div class="card">
+                    <div class="chart-header">
+                        <h5 class="chart-title mb-0">
+                            <i class="bi bi-lightning-charge text-warning me-2"></i>
+                            Acciones Rápidas
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <a href="{% url 'listar_encuestas' %}" class="quick-action-btn interactive-element">
+                                    <div class="quick-action-icon">
+                                        <i class="bi bi-file-earmark-text"></i>
+                                    </div>
+                                    <span>Gestionar Encuestas</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'listar_encuestados' %}" class="quick-action-btn interactive-element">
+                                    <div class="quick-action-icon">
+                                        <i class="bi bi-people"></i>
+                                    </div>
+                                    <span>Ver Encuestados</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'listar_fotografias' %}" class="quick-action-btn interactive-element">
+                                    <div class="quick-action-icon">
+                                        <i class="bi bi-camera"></i>
+                                    </div>
+                                    <span>Galería de Fotos</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'seleccionar_encuesta_encuestado' %}" class="quick-action-btn interactive-element">
+                                    <div class="quick-action-icon">
+                                        <i class="bi bi-clipboard-check"></i>
+                                    </div>
+                                    <span>Realizar Encuesta</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Pasar datos de Django a JavaScript
+    const labels = {{ labels_grafico|safe }};
+    const dataEncuestas = {{ data_encuestas|safe }};
+    const dataEncuestados = {{ data_encuestados|safe }};
+    const dataFotografias = {{ data_fotografias|safe }};
+    const totalEncuestas = {{ total_encuestas }};
+    const totalEncuestados = {{ total_encuestados }};
+    const totalFotografias = {{ total_fotografias }};
+    
+    console.log('Datos cargados desde Django:', {
+        labels: labels,
+        dataEncuestas: dataEncuestas,
+        dataEncuestados: dataEncuestados,
+        dataFotografias: dataFotografias,
+        totalEncuestas: totalEncuestas,
+        totalEncuestados: totalEncuestados,
+        totalFotografias: totalFotografias
+    });
+</script>
+<script src="{% static 'js/inicio/inicio.js' %}"></script>
+{% endblock %}

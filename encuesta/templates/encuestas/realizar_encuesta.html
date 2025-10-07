@@ -1,0 +1,557 @@
+{% extends "base.html" %}
+{% block contenido %}
+
+<!-- TOAST de mensajes mejorado -->
+{% if messages %}
+<div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;">
+  {% for message in messages %}
+  <div class="toast align-items-center text-bg-danger border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+    <div class="d-flex">
+      <div class="toast-body d-flex align-items-center">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        {{ message }}
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="container-fluid mt-4">
+    <!-- Header de la encuesta -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body text-white py-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h1 class="mb-2 display-6 fw-bold">
+                                <i class="fas fa-{% if es_edicion %}edit{% else %}poll{% endif %} me-3"></i>
+                                {% if es_edicion %}Editar Respuestas - {% endif %}{{ encuesta.titulo }}
+                            </h1>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user me-2"></i>
+                                <span class="lead mb-0">Encuestado: <strong>{{ encuestado.nombre }} {{ encuestado.apellido }}</strong></span>
+                            </div>
+                            {% if es_edicion %}
+                            <div class="d-flex align-items-center mt-2">
+                                <i class="fas fa-info-circle me-2 text-warning"></i>
+                                <span class="text-warning fw-semibold">Modo de edición - Puedes modificar tus respuestas anteriores</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'seleccionar_encuesta_encuestado' %}" class="btn btn-light btn-sm d-flex align-items-center shadow-sm">
+                            <i class="fas fa-arrow-left me-2"></i> Volver
+                        </a>
+                    </div>
+                    
+                    <!-- Barra de progreso -->
+                    <div class="progress-container">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <small class="text-white-50">Progreso de la encuesta</small>
+                            <small class="text-white-50" id="progressText">0 de {{ preguntas|length }} preguntas</small>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-white bg-opacity-75" role="progressbar" style="width: 0%" id="progressBar"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de la encuesta -->
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <form method="post" id="encuestaForm" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <!-- Preguntas -->
+                {% for pregunta in preguntas %}
+                <div class="card mb-4 border-0 shadow-sm pregunta-card" data-pregunta="{{ forloop.counter }}">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="pregunta-numero me-3">
+                                <span class="badge bg-primary rounded-pill fs-6 px-3 py-2">{{ forloop.counter }}</span>
+                            </div>
+                            <div class="pregunta-contenido flex-grow-1">
+                                <h5 class="fw-bold text-dark mb-3 pregunta-texto">
+                                    {{ pregunta.texto_pregunta }}
+                                    {% if pregunta.requerida %}
+                                        <span class="text-danger ms-1">*</span>
+                                    {% endif %}
+                                </h5>
+                                
+                                <!-- Respuesta de texto -->
+                                {% if pregunta.tipo_respuesta == 'texto' %}
+                                    <div class="form-floating">
+                                        <input type="text" 
+                                               name="pregunta_{{ pregunta.id }}" 
+                                               class="form-control form-control-lg" 
+                                               id="pregunta_{{ pregunta.id }}"
+                                               placeholder="Escribe tu respuesta aquí..."
+                                               value=""
+                                               {% if pregunta.requerida %}required{% endif %}>
+                                        <label for="pregunta_{{ pregunta.id }}">Tu respuesta</label>
+                                    </div>
+                                
+                                <!-- Opción múltiple -->
+                                {% elif pregunta.tipo_respuesta == 'opcion_multiple' %}
+                                    <div class="opciones-container">
+                                        {% for opcion in pregunta.opciones.all %}
+                                            <div class="form-check mb-3 p-3 border rounded-3 opcion-item">
+                                                <input class="form-check-input" 
+                                                       type="checkbox" 
+                                                       name="pregunta_{{ pregunta.id }}" 
+                                                       id="opcion_{{ opcion.id }}" 
+                                                       value="{{ opcion.id }}"
+                                                       onchange="updateProgress()">
+                                                <label class="form-check-label w-100" for="opcion_{{ opcion.id }}">
+                                                    <span class="fw-semibold">{{ opcion.texto_opcion }}</span>
+                                                </label>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                
+                                <!-- Opción única -->
+                                {% elif pregunta.tipo_respuesta == 'opcion_unica' %}
+                                    <div class="opciones-container">
+                                        {% for opcion in pregunta.opciones.all %}
+                                            <div class="form-check mb-3 p-3 border rounded-3 opcion-item">
+                                                <input class="form-check-input" 
+                                                       type="radio" 
+                                                       name="pregunta_{{ pregunta.id }}" 
+                                                       id="opcion_{{ opcion.id }}" 
+                                                       value="{{ opcion.id }}" 
+                                                       {% if pregunta.requerida %}required{% endif %}
+                                                       onchange="updateProgress()">
+                                                <label class="form-check-label w-100" for="opcion_{{ opcion.id }}">
+                                                    <span class="fw-semibold">{{ opcion.texto_opcion }}</span>
+                                                </label>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                
+                                <!-- Sí/No -->
+                                {% elif pregunta.tipo_respuesta == 'si_no' %}
+                                    <div class="si-no-container">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <div class="form-check p-3 border rounded-3 opcion-item si-option">
+                                                    <input class="form-check-input" 
+                                                           type="radio" 
+                                                           name="pregunta_{{ pregunta.id }}" 
+                                                           id="si_{{ pregunta.id }}" 
+                                                           value="Sí" 
+                                                           {% if pregunta.requerida %}required{% endif %}
+                                                           onchange="mostrarCampoTexto('{{ pregunta.id }}'); updateProgress()">
+                                                    <label class="form-check-label w-100" for="si_{{ pregunta.id }}">
+                                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                                        <span class="fw-semibold">Sí</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-check p-3 border rounded-3 opcion-item no-option">
+                                                    <input class="form-check-input" 
+                                                           type="radio" 
+                                                           name="pregunta_{{ pregunta.id }}" 
+                                                           id="no_{{ pregunta.id }}" 
+                                                           value="No" 
+                                                           {% if pregunta.requerida %}required{% endif %}
+                                                           onchange="mostrarCampoTexto('{{ pregunta.id }}'); updateProgress()">
+                                                    <label class="form-check-label w-100" for="no_{{ pregunta.id }}">
+                                                        <i class="fas fa-times-circle text-danger me-2"></i>
+                                                        <span class="fw-semibold">No</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {% if pregunta.titulo_campo_texto %}
+                                        <div id="campo_texto_{{ pregunta.id }}" class="mt-3" style="display:none;">
+                                            <div class="form-floating">
+                                                <input type="text" 
+                                                       class="form-control" 
+                                                       name="campo_texto_{{ pregunta.id }}" 
+                                                       id="campo_texto_input_{{ pregunta.id }}"
+                                                       placeholder="{{ pregunta.titulo_campo_texto }}">
+                                                <label for="campo_texto_input_{{ pregunta.id }}">{{ pregunta.titulo_campo_texto }}</label>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Botones de acción -->
+                <div class="card border-0 shadow-lg mt-4">
+                    <div class="card-body p-4 text-center">
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                            <button type="button" 
+                                    class="btn btn-success btn-lg px-5 py-3 shadow-sm" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#modalConfirmarEnvio"
+                                    id="btnEnviar">
+                                <i class="fas fa-paper-plane me-2"></i> 
+                                <span class="btn-text">Enviar Respuestas</span>
+                                <span class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                            </button>
+                            <a href="{% url 'seleccionar_encuesta_encuestado' %}" 
+                               class="btn btn-outline-secondary btn-lg px-5 py-3">
+                                <i class="fas fa-times me-2"></i> Cancelar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmar envío mejorado -->
+<div class="modal fade" id="modalConfirmarEnvio" tabindex="-1" aria-labelledby="modalConfirmarEnvioLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <form id="formConfirmarEnvio" onsubmit="enviarFormulario(event)">
+        <div class="modal-header bg-success text-white border-0">
+          <h5 class="modal-title d-flex align-items-center" id="modalConfirmarEnvioLabel">
+            <i class="fas fa-shield-alt me-3 fs-4"></i>
+            <span>Confirmar Envío</span>
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body text-center py-4">
+          <div class="mb-4">
+            <i class="fas fa-paper-plane text-success" style="font-size: 3rem;"></i>
+          </div>
+          <h6 class="fw-bold text-dark mb-3">¿Estás seguro de enviar las respuestas?</h6>
+          <p class="text-muted mb-4">
+            Una vez enviadas, no podrás modificar las respuestas. 
+            <br>Ingresa tu contraseña para confirmar.
+          </p>
+          
+          <div class="form-floating">
+            <input type="password" 
+                   name="superuser_password" 
+                   class="form-control form-control-lg" 
+                   id="passwordInput"
+                   placeholder="Contraseña de superusuario" 
+                   required>
+            <label for="passwordInput">
+              <i class="fas fa-lock me-2"></i>Contraseña de superusuario
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer border-0 justify-content-center">
+          <button type="submit" class="btn btn-success btn-lg px-4 me-2">
+            <i class="fas fa-check me-2"></i>Confirmar y Enviar
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-lg px-4" data-bs-dismiss="modal">
+            <i class="fas fa-times me-2"></i>Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts mejorados -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Mostrar toasts
+    var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+    toastElList.forEach(function(toastEl) {
+        var toast = new bootstrap.Toast(toastEl);
+        toast.show();
+    });
+
+    // Inicializar progreso
+    updateProgress();
+
+    // Efectos de hover en las opciones
+    const opcionItems = document.querySelectorAll('.opcion-item');
+    opcionItems.forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = '#f8f9fa';
+            this.style.borderColor = '#0d6efd';
+            this.style.transform = 'translateX(5px)';
+            this.style.transition = 'all 0.3s ease';
+        });
+        
+        item.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+            this.style.borderColor = '';
+            this.style.transform = 'translateX(0)';
+        });
+    });
+
+    // Efectos en las tarjetas de preguntas
+    const preguntaCards = document.querySelectorAll('.pregunta-card');
+    preguntaCards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+    });
+
+    // Validación del formulario
+    const form = document.getElementById('encuestaForm');
+    const btnEnviar = document.getElementById('btnEnviar');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        // La validación se maneja en el modal
+    });
+
+    // Cargar respuestas existentes si es edición
+    {% if es_edicion and respuestas_existentes %}
+    const respuestasExistentes = {{ respuestas_existentes|safe }};
+    
+    Object.keys(respuestasExistentes).forEach(preguntaId => {
+        const respuestas = respuestasExistentes[preguntaId];
+        const preguntaElement = document.querySelector(`[data-pregunta="${preguntaId}"]`);
+        
+        if (preguntaElement) {
+            // Para campos de texto
+            const inputTexto = preguntaElement.querySelector('input[type="text"]');
+            if (inputTexto && respuestas.length > 0) {
+                inputTexto.value = respuestas[0];
+            }
+            
+            // Para opciones múltiples (checkboxes)
+            respuestas.forEach(respuestaId => {
+                const checkbox = preguntaElement.querySelector(`input[type="checkbox"][value="${respuestaId}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
+            });
+            
+            // Para opciones únicas (radio buttons)
+            respuestas.forEach(respuestaId => {
+                const radio = preguntaElement.querySelector(`input[type="radio"][value="${respuestaId}"]`);
+                if (radio) {
+                    radio.checked = true;
+                }
+            });
+            
+            // Para preguntas Sí/No
+            respuestas.forEach(respuesta => {
+                if (respuesta === 'Sí' || respuesta === 'No') {
+                    const radio = preguntaElement.querySelector(`input[type="radio"][value="${respuesta}"]`);
+                    if (radio) {
+                        radio.checked = true;
+                        // Si es "Sí", mostrar campo de texto adicional
+                        if (respuesta === 'Sí') {
+                            const campoTexto = preguntaElement.querySelector('[id^="campo_texto_"]');
+                            if (campoTexto) {
+                                campoTexto.style.display = 'block';
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+    
+    // Actualizar progreso después de cargar respuestas
+    updateProgress();
+    {% endif %}
+});
+
+function updateProgress() {
+    const totalPreguntas = document.querySelectorAll('.pregunta-card').length;
+    let preguntasRespondidas = 0;
+    
+    document.querySelectorAll('.pregunta-card').forEach(card => {
+        const inputs = card.querySelectorAll('input[type="text"], input[type="radio"], input[type="checkbox"]');
+        let tieneRespuesta = false;
+        
+        inputs.forEach(input => {
+            if (input.type === 'checkbox' || input.type === 'radio') {
+                if (input.checked) {
+                    tieneRespuesta = true;
+                }
+            } else if (input.type === 'text' && input.value.trim() !== '') {
+                tieneRespuesta = true;
+            }
+        });
+        
+        if (tieneRespuesta) {
+            preguntasRespondidas++;
+            card.classList.add('pregunta-respondida');
+        } else {
+            card.classList.remove('pregunta-respondida');
+        }
+    });
+    
+    const porcentaje = totalPreguntas > 0 ? (preguntasRespondidas / totalPreguntas) * 100 : 0;
+    
+    document.getElementById('progressBar').style.width = porcentaje + '%';
+    document.getElementById('progressText').textContent = `${preguntasRespondidas} de ${totalPreguntas} preguntas`;
+    
+    // Actualizar estado del botón
+    const btnEnviar = document.getElementById('btnEnviar');
+    if (preguntasRespondidas === totalPreguntas) {
+        btnEnviar.classList.remove('btn-secondary');
+        btnEnviar.classList.add('btn-success');
+        btnEnviar.disabled = false;
+    } else {
+        btnEnviar.classList.remove('btn-success');
+        btnEnviar.classList.add('btn-secondary');
+        btnEnviar.disabled = true;
+    }
+}
+
+function enviarFormulario(event) {
+    event.preventDefault();
+    const password = event.target.superuser_password.value;
+    const form = document.getElementById('encuestaForm');
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'superuser_password';
+    input.value = password;
+    form.appendChild(input);
+    
+    // Mostrar spinner
+    const btnText = document.querySelector('#btnEnviar .btn-text');
+    const spinner = document.querySelector('#btnEnviar .spinner-border');
+    btnText.textContent = 'Enviando...';
+    spinner.classList.remove('d-none');
+    
+    form.submit();
+}
+
+function mostrarCampoTexto(preguntaId) {
+    const siRadio = document.getElementById('si_' + preguntaId);
+    const campoTexto = document.getElementById('campo_texto_' + preguntaId);
+    if (campoTexto) {
+        if (siRadio.checked) {
+            campoTexto.style.display = 'block';
+            campoTexto.style.animation = 'fadeInUp 0.3s ease';
+        } else {
+            campoTexto.style.display = 'none';
+            const input = document.getElementById('campo_texto_input_' + preguntaId);
+            if (input) input.value = '';
+        }
+    }
+}
+</script>
+
+<style>
+/* Animaciones personalizadas */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.pregunta-card {
+    animation: fadeInUp 0.6s ease-out;
+    transition: all 0.3s ease;
+}
+
+.pregunta-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+.pregunta-respondida {
+    border-left: 4px solid #28a745 !important;
+    background-color: #f8fff9 !important;
+}
+
+.opcion-item {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.opcion-item:hover {
+    background-color: #f8f9fa;
+    border-color: #0d6efd;
+}
+
+.opcion-item input[type="radio"]:checked + label,
+.opcion-item input[type="checkbox"]:checked + label {
+    color: #0d6efd;
+    font-weight: bold;
+}
+
+.si-option:hover {
+    background-color: #d4edda !important;
+    border-color: #28a745 !important;
+}
+
+.no-option:hover {
+    background-color: #f8d7da !important;
+    border-color: #dc3545 !important;
+}
+
+.form-floating > .form-control {
+    padding-top: 1.625rem;
+    padding-bottom: 0.625rem;
+}
+
+.form-floating > label {
+    opacity: 0.65;
+    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+}
+
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.progress {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .pregunta-card .d-flex {
+        flex-direction: column;
+    }
+    
+    .pregunta-numero {
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+    
+    .si-no-container .row {
+        margin: 0;
+    }
+    
+    .si-no-container .col-md-6 {
+        padding: 0;
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock %}

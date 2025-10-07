@@ -1,0 +1,9 @@
+        .cc-license-link {
+            display: inline-block;
+            color: #0099CC; /* Cambia el color del enlace */
+        }
+        .cc-license-link img {
+            height: 22px !important;
+            margin-left: 3px;
+            vertical-align: text-bottom;
+        }

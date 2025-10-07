@@ -1,0 +1,584 @@
+{% extends "base.html" %}
+{% block contenido %}
+{% load static %}
+
+<div class="container-fluid mt-4">
+    <!-- Header con gradiente -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body text-white py-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h1 class="mb-2 display-6 fw-bold">
+                                <i class="fas fa-users me-3"></i>
+                                Respondientes de "{{ encuesta.titulo }}"
+                            </h1>
+                            <p class="lead mb-0 opacity-75">Gestiona y visualiza las respuestas de los encuestados</p>
+                        </div>
+                        <div class="text-end">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-user-check me-2"></i>
+                                <span class="h5 mb-0">{{ respuestas|length }} Respondientes</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-calendar me-2"></i>
+                                <span class="h6 mb-0 opacity-75">Última actualización: {{ encuesta.fecha_creacion|date:"d/m/Y" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botón de regreso -->
+                    <div class="mt-3">
+                        <a href="{% url 'listar_reportes' %}" class="btn btn-light btn-sm shadow-sm">
+                            <i class="fas fa-arrow-left me-2"></i> Volver a Reportes
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros y búsqueda -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text bg-primary text-white">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" class="form-control" id="searchInput" placeholder="Buscar respondientes...">
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-primary" id="btnFiltrarTodos">
+                                    <i class="fas fa-list me-1"></i> Todos
+                                </button>
+                                <button type="button" class="btn btn-outline-success" id="btnFiltrarRecientes">
+                                    <i class="fas fa-clock me-1"></i> Recientes
+                                </button>
+                                <button type="button" class="btn btn-outline-info" id="btnFiltrarAntiguos">
+                                    <i class="fas fa-history me-1"></i> Antiguos
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de respondientes con diseño moderno -->
+    <div class="row" id="respondientesContainer">
+        {% for respuesta in respuestas %}
+        <div class="col-lg-4 col-xl-3 mb-4 respondiente-card" data-nombre="{{ respuesta.encuestado.nombre|lower }} {{ respuesta.encuestado.apellido|lower }}" data-fecha="{{ respuesta.fecha_creacion|date:'Y-m-d' }}">
+            <div class="card border-0 shadow-sm h-100 respondiente-item">
+                <div class="card-header bg-white border-0 pb-0">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="respondiente-numero">
+                            <span class="badge bg-primary rounded-pill fs-6 px-3 py-2">{{ forloop.counter }}</span>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item ver-detalle-respuesta" href="#" data-id="{{ respuesta.id }}">
+                                    <i class="fas fa-eye me-2"></i> Ver Respuestas
+                                </a></li>
+                                <li><a class="dropdown-item ver-detalle-encuestado" href="#" 
+                                       data-nombre="{{ respuesta.encuestado.nombre }}"
+                                       data-apellido="{{ respuesta.encuestado.apellido }}"
+                                       data-cedula="{{ respuesta.encuestado.tipo_cedula }}-{{ respuesta.encuestado.cedula_numero }}"
+                                       data-genero="{{ respuesta.encuestado.get_genero_display }}"
+                                       data-telefono="{{ respuesta.encuestado.telefono }}"
+                                       data-direccion="{{ respuesta.encuestado.direccion }}"
+                                       data-fecha="{{ respuesta.encuestado.fecha_registro|date:'d/m/Y H:i' }}"
+                                       data-cargo="{{ respuesta.encuestado.cargo }}"
+                                       data-ubicacion="{{ respuesta.encuestado.ubicacion_administrativa }}">
+                                    <i class="fas fa-user me-2"></i> Ver Perfil
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body flex-grow-1 p-3">
+                    <!-- Información del encuestado -->
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="avatar-container me-2">
+                            <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="card-title fw-bold text-dark mb-1 respondiente-nombre">
+                                {{ respuesta.encuestado.nombre }} {{ respuesta.encuestado.apellido }}
+                            </h5>
+                            <p class="card-text text-muted mb-0">
+                                <i class="fas fa-id-card me-1"></i>
+                                {{ respuesta.encuestado.tipo_cedula }}-{{ respuesta.encuestado.cedula_numero }}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Información adicional -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <div class="d-flex align-items-center p-2 bg-light rounded-3">
+                                <div class="me-2">
+                                    <i class="fas fa-venus-mars text-info"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark">{{ respuesta.encuestado.get_genero_display }}</div>
+                                    <small class="text-muted">Género</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center p-2 bg-light rounded-3">
+                                <div class="me-2">
+                                    <i class="fas fa-phone text-success"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark">{{ respuesta.encuestado.telefono|default:"N/A" }}</div>
+                                    <small class="text-muted">Teléfono</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Cargo y ubicación -->
+                    {% if respuesta.encuestado.cargo or respuesta.encuestado.ubicacion_administrativa %}
+                    <div class="mb-3">
+                        {% if respuesta.encuestado.cargo %}
+                        <div class="d-flex align-items-center mb-1">
+                            <i class="fas fa-briefcase text-warning me-2"></i>
+                            <span class="text-dark fw-semibold">{{ respuesta.encuestado.cargo }}</span>
+                        </div>
+                        {% endif %}
+                        {% if respuesta.encuestado.ubicacion_administrativa %}
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                            <span class="text-muted">{{ respuesta.encuestado.ubicacion_administrativa }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Fecha de respuesta -->
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center p-2 bg-primary bg-opacity-10 rounded-3">
+                            <div class="me-2">
+                                <i class="fas fa-calendar-check text-primary"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark">{{ respuesta.fecha_creacion|date:"d/m/Y" }}</div>
+                                <small class="text-muted">{{ respuesta.fecha_creacion|date:"H:i" }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-white border-0 pt-0">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary btn-lg shadow-sm ver-detalle-respuesta" data-id="{{ respuesta.id }}">
+                            <i class="fas fa-chart-line me-2"></i>
+                            <span class="btn-text">Ver Respuestas</span>
+                            <span class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-users text-muted" style="font-size: 4rem;"></i>
+                    </div>
+                    <h4 class="text-muted mb-3">No hay respondientes</h4>
+                    <p class="text-muted mb-4">Esta encuesta aún no ha sido respondida por ningún encuestado.</p>
+                    <a href="{% url 'seleccionar_encuesta_encuestado' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i> Realizar Encuesta
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal Detalle de Respuesta -->
+<div class="modal fade" id="modalDetalleRespuesta" tabindex="-1" aria-labelledby="modalDetalleRespuestaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white border-0">
+                <h5 class="modal-title d-flex align-items-center" id="modalDetalleRespuestaLabel">
+                    <i class="fas fa-chart-line me-3 fs-4"></i>
+                    <span>Detalle de Respuestas</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body" id="modalDetalleRespuestaBody">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Cargando respuestas...</p>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detalle del Encuestado -->
+<div class="modal fade" id="modalDetalleEncuestado" tabindex="-1" aria-labelledby="modalDetalleEncuestadoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-info text-white border-0">
+                <h5 class="modal-title d-flex align-items-center" id="modalDetalleEncuestadoLabel">
+                    <i class="fas fa-user me-3 fs-4"></i>
+                    <span>Perfil del Encuestado</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-4 text-center mb-4">
+                        <div class="avatar bg-info text-white rounded-circle d-flex align-items-center justify-content-center mx-auto" style="width: 80px; height: 80px;">
+                            <i class="fas fa-user" style="font-size: 2rem;"></i>
+                        </div>
+                        <h5 class="mt-3 mb-1" id="modal-nombre-completo"></h5>
+                        <p class="text-muted mb-0" id="modal-cedula"></p>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="p-3 bg-light rounded-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-venus-mars text-info me-2"></i>
+                                        <span class="fw-bold">Género</span>
+                                    </div>
+                                    <span id="modal-genero" class="text-dark"></span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3 bg-light rounded-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-phone text-success me-2"></i>
+                                        <span class="fw-bold">Teléfono</span>
+                                    </div>
+                                    <span id="modal-telefono" class="text-dark"></span>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="p-3 bg-light rounded-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                                        <span class="fw-bold">Dirección</span>
+                                    </div>
+                                    <span id="modal-direccion" class="text-dark"></span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3 bg-light rounded-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-briefcase text-warning me-2"></i>
+                                        <span class="fw-bold">Cargo</span>
+                                    </div>
+                                    <span id="modal-cargo" class="text-dark"></span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3 bg-light rounded-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-building text-primary me-2"></i>
+                                        <span class="fw-bold">Ubicación</span>
+                                    </div>
+                                    <span id="modal-ubicacion" class="text-dark"></span>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="p-3 bg-light rounded-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-calendar text-info me-2"></i>
+                                        <span class="fw-bold">Fecha de Registro</span>
+                                    </div>
+                                    <span id="modal-fecha" class="text-dark"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estilos personalizados -->
+<style>
+.respondiente-card {
+    transition: all 0.3s ease;
+}
+
+.respondiente-card:hover {
+    transform: translateY(-5px);
+}
+
+.respondiente-item {
+    transition: all 0.3s ease;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.respondiente-item:hover {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+}
+
+.respondiente-nombre {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+}
+
+.avatar {
+    transition: all 0.3s ease;
+}
+
+.avatar:hover {
+    transform: scale(1.1);
+}
+
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+}
+
+.card-footer {
+    border-radius: 0 0 15px 15px !important;
+}
+
+/* Animaciones de entrada */
+.respondiente-card {
+    animation: fadeInUp 0.6s ease forwards;
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+.respondiente-card:nth-child(1) { animation-delay: 0.1s; }
+.respondiente-card:nth-child(2) { animation-delay: 0.2s; }
+.respondiente-card:nth-child(3) { animation-delay: 0.3s; }
+.respondiente-card:nth-child(4) { animation-delay: 0.4s; }
+.respondiente-card:nth-child(5) { animation-delay: 0.5s; }
+.respondiente-card:nth-child(6) { animation-delay: 0.6s; }
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Efectos de hover en las estadísticas */
+.bg-light {
+    transition: all 0.3s ease;
+}
+
+.bg-light:hover {
+    background-color: #e9ecef !important;
+    transform: scale(1.05);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .display-6 {
+        font-size: 1.5rem;
+    }
+    
+    .lead {
+        font-size: 1rem;
+    }
+}
+</style>
+
+<!-- Scripts -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Búsqueda en tiempo real
+    const searchInput = document.getElementById('searchInput');
+    const respondientesContainer = document.getElementById('respondientesContainer');
+    const respondienteCards = document.querySelectorAll('.respondiente-card');
+    
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        respondienteCards.forEach(card => {
+            const nombre = card.dataset.nombre;
+            
+            if (nombre.includes(searchTerm)) {
+                card.style.display = 'block';
+                card.style.animation = 'fadeInUp 0.3s ease forwards';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+    
+    // Filtros por fecha
+    const btnFiltrarTodos = document.getElementById('btnFiltrarTodos');
+    const btnFiltrarRecientes = document.getElementById('btnFiltrarRecientes');
+    const btnFiltrarAntiguos = document.getElementById('btnFiltrarAntiguos');
+    
+    function aplicarFiltro(filtro) {
+        const hoy = new Date();
+        const hace7Dias = new Date(hoy.getTime() - (7 * 24 * 60 * 60 * 1000));
+        
+        respondienteCards.forEach(card => {
+            const fechaRespuesta = new Date(card.dataset.fecha);
+            let mostrar = true;
+            
+            switch(filtro) {
+                case 'recientes':
+                    mostrar = fechaRespuesta >= hace7Dias;
+                    break;
+                case 'antiguos':
+                    mostrar = fechaRespuesta < hace7Dias;
+                    break;
+                case 'todos':
+                default:
+                    mostrar = true;
+                    break;
+            }
+            
+            if (mostrar) {
+                card.style.display = 'block';
+                card.style.animation = 'fadeInUp 0.3s ease forwards';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+    
+    btnFiltrarTodos.addEventListener('click', function() {
+        aplicarFiltro('todos');
+        actualizarBotonesActivos(this);
+    });
+    
+    btnFiltrarRecientes.addEventListener('click', function() {
+        aplicarFiltro('recientes');
+        actualizarBotonesActivos(this);
+    });
+    
+    btnFiltrarAntiguos.addEventListener('click', function() {
+        aplicarFiltro('antiguos');
+        actualizarBotonesActivos(this);
+    });
+    
+    function actualizarBotonesActivos(botonActivo) {
+        [btnFiltrarTodos, btnFiltrarRecientes, btnFiltrarAntiguos].forEach(btn => {
+            btn.classList.remove('active');
+        });
+        botonActivo.classList.add('active');
+    }
+    
+    // Efectos de hover en las tarjetas
+    respondienteCards.forEach(card => {
+        const respondienteItem = card.querySelector('.respondiente-item');
+        
+        card.addEventListener('mouseenter', function() {
+            respondienteItem.style.transform = 'translateY(-5px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            respondienteItem.style.transform = 'translateY(0)';
+        });
+    });
+    
+    // Efectos en los botones
+    const botones = document.querySelectorAll('.btn');
+    botones.forEach(boton => {
+        boton.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        
+        boton.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+    
+    // Modal de detalle de respuesta
+    $('.ver-detalle-respuesta').on('click', function(e) {
+        e.preventDefault();
+        var respuestaId = $(this).data('id');
+        var btnText = $(this).find('.btn-text');
+        var spinner = $(this).find('.spinner-border');
+        
+        if (btnText.length && spinner.length) {
+            btnText.text('Cargando...');
+            spinner.removeClass('d-none');
+            $(this).prop('disabled', true);
+        }
+        
+        $.ajax({
+            url: '/respuesta/' + respuestaId + '/',
+            type: 'GET',
+            success: function(data) {
+                $('#modalDetalleRespuestaBody').html(data);
+                $('#modalDetalleRespuesta').modal('show');
+            },
+            error: function() {
+                $('#modalDetalleRespuestaBody').html('<div class="text-center py-4"><i class="fas fa-exclamation-triangle text-danger" style="font-size: 3rem;"></i><h5 class="mt-3 text-danger">Error al cargar el detalle</h5><p class="text-muted">No se pudo cargar la información de las respuestas.</p></div>');
+                $('#modalDetalleRespuesta').modal('show');
+            },
+            complete: function() {
+                if (btnText.length && spinner.length) {
+                    btnText.text('Ver Respuestas');
+                    spinner.addClass('d-none');
+                    $('.ver-detalle-respuesta').prop('disabled', false);
+                }
+            }
+        });
+    });
+    
+    // Modal de detalles del encuestado
+    $('.ver-detalle-encuestado').on('click', function(e) {
+        e.preventDefault();
+        $('#modal-nombre-completo').text($(this).data('nombre') + ' ' + $(this).data('apellido'));
+        $('#modal-cedula').text($(this).data('cedula'));
+        $('#modal-genero').text($(this).data('genero'));
+        $('#modal-telefono').text($(this).data('telefono') || 'No especificado');
+        $('#modal-direccion').text($(this).data('direccion') || 'No especificada');
+        $('#modal-cargo').text($(this).data('cargo') || 'No especificado');
+        $('#modal-ubicacion').text($(this).data('ubicacion') || 'No especificada');
+        $('#modal-fecha').text($(this).data('fecha'));
+        $('#modalDetalleEncuestado').modal('show');
+    });
+});
+</script>
+
+{% endblock %}

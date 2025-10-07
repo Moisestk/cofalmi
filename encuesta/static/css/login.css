@@ -1,0 +1,46 @@
+    .show-pass-login {
+    z-index: 1;
+    position: absolute;
+    right: 9px;
+    top: 8px;
+    cursor: pointer;
+    }
+
+    .show-pass-login {
+    cursor: pointer;
+    }
+    .show-pass-login .fa-eye {
+    display: none;
+    }
+    .show-pass-login.active .fa-eye-slash {
+    display: none;
+    }
+    .show-pass-login.active .fa-eye {
+    display: inline-block;
+    }
+
+    .forgot-link {
+  display: block;
+  margin: 0 auto;
+  color: #1677ff;
+  background: none;
+  border: none;
+  font-weight: 600;
+  font-size: 1rem;
+  text-align: center;
+  margin-top: 18px;
+  transition: color 0.2s, background 0.2s;
+  cursor: pointer;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+}
+.forgot-link:hover, .forgot-link:focus {
+  color: #fff;
+  background: #1677ff;
+  text-decoration: none;
+}
+
+
+.captcha .form-control {
+    margin-bottom: 10px;
+}

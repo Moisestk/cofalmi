@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block titulo%} Editar Usuario{% endblock %}
+{% block titulo_header%}<i class="fa fa-users"></i> USUARIOS{% endblock%}
+
+{% block contenido %}
+<div class="card">
+    <form method="post">
+        {% csrf_token %}
+    <div class="card-header">
+        <h3 class="card-title">Editar Usuario</h3>
+        <div class="card-tools">
+        </div>
+    </div>
+    <div class="card-body">
+        {% include './form2.html'%}
+    <!-- /.card-body -->
+    </div>
+    <div class="card-footer text-right">
+        <a href="/usuarios" class="btn btn-sm btn-danger">Cancelar</a>
+        <button type="submit" class="btn btn-sm btn-primary" id="action">Actualizar</button>
+      </div>
+    </form>
+</div>
+{% if form.errors %}
+  <div class="alert alert-danger">
+    {{ form.errors }}
+  </div>
+{% endif %}
+{% endblock %}

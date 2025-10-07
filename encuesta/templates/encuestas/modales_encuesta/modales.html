@@ -1,0 +1,251 @@
+<!-- Modal para reabrir encuesta con autenticación -->
+<div class="modal fade" id="modalReabrirEncuesta" tabindex="-1" aria-labelledby="modalReabrirEncuestaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <form method="post" id="formReabrirEncuesta">
+        {% csrf_token %}
+        <div class="modal-header bg-info text-white border-0">
+            <h5 class="modal-title d-flex align-items-center" id="modalReabrirEncuestaLabel">
+              <i class="fas fa-unlock me-3 fs-4"></i>
+              <span>Reabrir Encuesta</span>
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body text-center py-4">
+          <div class="mb-4">
+            <i class="fas fa-calendar-plus text-info" style="font-size: 3rem;"></i>
+          </div>
+          <h6 class="fw-bold text-dark mb-3">¿Reabrir esta encuesta?</h6>
+          <p class="text-muted mb-4">
+            Para reabrir la encuesta, ingresa tu contraseña y la nueva fecha de finalización.
+          </p>
+          <div class="form-floating mb-3">
+            <input type="password" name="password" class="form-control form-control-lg" id="passwordReabrir" placeholder="Contraseña" required>
+            <label for="passwordReabrir">
+              <i class="fas fa-lock me-2"></i>Contraseña
+            </label>
+          </div>
+          <div class="form-floating">
+            <input type="date" name="nueva_fecha_finalizacion" id="nueva_fecha_finalizacion" class="form-control form-control-lg" required>
+            <label for="nueva_fecha_finalizacion">
+              <i class="fas fa-calendar me-2"></i>Nueva fecha de finalización
+            </label>
+          </div>
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} mt-2">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', (event) => {
+                const fechaCampo = document.getElementById('nueva_fecha_finalizacion');
+
+                if (fechaCampo) {
+                    const today = new Date();
+                    const currentYear = today.getFullYear();
+                    
+                    // Establecer la fecha mínima: 1 de enero del año actual
+                    const minDate = new Date(currentYear, 0, 1);
+                    const minDateFormatted = minDate.toISOString().split('T')[0];
+
+                    // Establecer la fecha máxima: 31 de diciembre del año actual + 3 años
+                    const maxDate = new Date(currentYear + 3, 11, 31);
+                    const maxDateFormatted = maxDate.toISOString().split('T')[0];
+                    
+                    // Establecer el valor inicial en la fecha actual, solo si está vacío
+                    if (!fechaCampo.value) {
+                        const month = String(today.getMonth() + 1).padStart(2, '0');
+                        const day = String(today.getDate()).padStart(2, '0');
+                        const formattedDate = `${currentYear}-${month}-${day}`;
+                        fechaCampo.value = formattedDate;
+                    }
+
+                    // Asignar los atributos min y max al campo de entrada
+                    fechaCampo.setAttribute('min', minDateFormatted);
+                    fechaCampo.setAttribute('max', maxDateFormatted);
+                }
+            });
+        </script>
+        <div class="modal-footer border-0 justify-content-center">
+          <button type="submit" class="btn btn-info btn-lg px-4 me-2">
+            <i class="fas fa-check me-2"></i>Reabrir Encuesta
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-lg px-4" data-bs-dismiss="modal">
+            <i class="fas fa-times me-2"></i>Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Enviar a Papelera Encuesta -->
+<div class="modal fade" id="borrarEncuestaModal" tabindex="-1" aria-labelledby="borrarEncuestaModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <form id="formPapeleraEncuesta" method="post">
+        {% csrf_token %}
+        <div class="modal-header bg-warning text-dark border-0">
+          <h5 class="modal-title d-flex align-items-center" id="borrarEncuestaModalLabel">
+            <i class="fas fa-trash-restore me-3 fs-4"></i>
+            <span>Enviar a Papelera</span>
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body text-center py-4">
+          <div class="mb-4">
+            <i class="fas fa-trash text-warning" style="font-size: 3rem;"></i>
+          </div>
+          <h6 class="fw-bold text-dark mb-3">¿Enviar a papelera?</h6>
+          <p class="text-muted mb-4">
+            La encuesta <strong id="modal-borrar-titulo"></strong> será movida a la papelera.
+            <br>Podrás restaurarla más tarde si es necesario.
+          </p>
+        </div>
+        <div class="modal-footer border-0 justify-content-center">
+          <button type="submit" class="btn btn-warning btn-lg px-4 me-2">
+            <i class="fas fa-trash me-2"></i>Enviar a Papelera
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-lg px-4" data-bs-dismiss="modal">
+            <i class="fas fa-times me-2"></i>Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Finalizar Encuesta -->
+<div class="modal fade" id="modalEstadoEncuesta" tabindex="-1" aria-labelledby="modalEstadoEncuestaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <form id="formEstadoEncuesta" method="post">
+        {% csrf_token %}
+        <div class="modal-header bg-danger text-white border-0">
+          <h5 class="modal-title d-flex align-items-center" id="modalEstadoEncuestaLabel">
+            <i class="fas fa-stop-circle me-3 fs-4"></i>
+            <span>Finalizar Encuesta</span>
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body text-center py-4" id="modalEstadoEncuestaBody">
+          <div class="mb-4">
+            <i class="fas fa-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
+          </div>
+          <h6 class="fw-bold text-dark mb-3">¿Finalizar esta encuesta?</h6>
+          <p class="text-muted mb-4">
+            Una vez finalizada, la encuesta no podrá recibir más respuestas.
+            <br>Esta acción puede revertirse más tarde.
+          </p>
+        </div>
+        <div class="modal-footer border-0 justify-content-center">
+          <button type="submit" class="btn btn-danger btn-lg px-4 me-2" id="modalEstadoEncuestaBtn">
+            <i class="fas fa-stop me-2"></i>Finalizar Encuesta
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-lg px-4" data-bs-dismiss="modal">
+            <i class="fas fa-times me-2"></i>Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Crear Encuesta -->
+<div class="modal fade" id="modalCrearEncuesta" tabindex="-1" aria-labelledby="modalCrearEncuestaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-primary text-white border-0">
+        <h5 class="modal-title d-flex align-items-center" id="modalCrearEncuestaLabel">
+          <i class="fas fa-plus-circle me-3 fs-4"></i>
+          <span>Crear Nueva Encuesta</span>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <form id="formCrearEncuesta" class="p-4">
+        {% csrf_token %}
+        <div class="mb-4 text-center">
+          <i class="fas fa-poll text-primary" style="font-size: 3rem;"></i>
+        </div>
+        <div class="form-floating mb-3">
+          <input type="text" name="titulo" id="titulo" class="form-control form-control-lg" placeholder="Título de la encuesta" required>
+          <label for="titulo">
+            <i class="fas fa-heading me-2"></i>Título de la encuesta
+          </label>
+        </div>
+        <div class="form-floating mb-3">
+          <textarea name="descripcion" id="descripcion" class="form-control form-control-lg" placeholder="Descripción de la encuesta" style="height: 100px;"></textarea>
+          <label for="descripcion">
+            <i class="fas fa-align-left me-2"></i>Descripción (opcional)
+          </label>
+        </div>
+        <div class="form-floating mb-4">
+          <input type="date" name="fecha_finalizacion" id="fecha_finalizacion" class="form-control form-control-lg" placeholder="Fecha de finalización">
+          <label for="fecha_finalizacion">
+            <i class="fas fa-calendar me-2"></i>Fecha de finalización (opcional)
+          </label>
+        </div>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+          <button type="submit" class="btn btn-primary btn-lg px-4 me-2">
+            <i class="fas fa-save me-2"></i>Crear Encuesta
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-lg px-4" data-bs-dismiss="modal">
+            <i class="fas fa-times me-2"></i>Cancelar
+          </button>
+        </div>
+        <div id="ajax-error-msg" class="alert alert-danger mt-3 d-none"></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Encuesta -->
+<div class="modal fade" id="modalEditarEncuesta" tabindex="-1" aria-labelledby="modalEditarEncuestaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-success text-white border-0">
+        <h5 class="modal-title d-flex align-items-center" id="modalEditarEncuestaLabel">
+          <i class="fas fa-edit me-3 fs-4"></i>
+          <span>Editar Encuesta</span>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <form id="formEditarEncuesta" class="p-4">
+        {% csrf_token %}
+        <input type="hidden" name="id" id="edit_id">
+        <div class="mb-4 text-center">
+          <i class="fas fa-edit text-success" style="font-size: 3rem;"></i>
+        </div>
+        <div class="form-floating mb-3">
+          <input type="text" name="titulo" id="edit_titulo" class="form-control form-control-lg" placeholder="Título de la encuesta" required>
+          <label for="edit_titulo">
+            <i class="fas fa-heading me-2"></i>Título de la encuesta
+          </label>
+        </div>
+        <div class="form-floating mb-3">
+          <textarea name="descripcion" id="edit_descripcion" class="form-control form-control-lg" placeholder="Descripción de la encuesta" style="height: 100px;"></textarea>
+          <label for="edit_descripcion">
+            <i class="fas fa-align-left me-2"></i>Descripción (opcional)
+          </label>
+        </div>
+        <div class="form-floating mb-4">
+          <input type="date" name="fecha_finalizacion" id="edit_fecha_finalizacion" class="form-control form-control-lg" placeholder="Fecha de finalización">
+          <label for="edit_fecha_finalizacion">
+            <i class="fas fa-calendar me-2"></i>Fecha de finalización (opcional)
+          </label>
+        </div>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+          <button type="submit" class="btn btn-success btn-lg px-4 me-2">
+            <i class="fas fa-save me-2"></i>Guardar Cambios
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-lg px-4" data-bs-dismiss="modal">
+            <i class="fas fa-times me-2"></i>Cancelar
+          </button>
+        </div>
+        <div id="ajax-edit-error-msg" class="alert alert-danger mt-3 d-none"></div>
+      </form>
+    </div>
+  </div>
+</div>

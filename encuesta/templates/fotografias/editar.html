@@ -1,0 +1,455 @@
+{% extends "base.html" %}
+{% load static %}
+{% block contenido %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+/* Animaciones personalizadas */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Header principal con gradiente */
+.editar-header {
+    background: linear-gradient(135deg, #0a58ca);
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.editar-header .card-body {
+    padding: 2rem;
+}
+
+.editar-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.editar-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 1.5rem;
+}
+
+/* Cards mejoradas */
+.card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.card:hover {
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    transform: translateY(-2px);
+}
+
+.card-header {
+    background: linear-gradient(135deg, #0a58ca);
+    border: none;
+    border-radius: 1rem 1rem 0 0;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.card:hover .card-header::before {
+    left: 100%;
+}
+
+.card-header h5, .card-header h6 {
+    color: #fff;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Formulario mejorado */
+.form-control {
+    border-radius: 0.75rem;
+    border: 2px solid #e9ecef;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    transform: translateY(-1px);
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+/* Preview de imagen */
+#previewContainer {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    border: 2px dashed #dee2e6;
+    transition: all 0.3s ease;
+}
+
+#previewContainer:hover {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #f0f4ff 0%, #e6f0ff 100%);
+}
+
+#previewImg {
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+#previewImg:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+/* Botones mejorados */
+.btn {
+    border-radius: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+}
+
+.btn:hover::before {
+    width: 100%;
+    height: 100%;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+/* Sidebar mejorada */
+.sidebar-card {
+    animation: slideInRight 0.8s ease-out;
+}
+
+.sidebar-card .card-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.sidebar-card .card-body {
+    background: linear-gradient(135deg, #f8fff9 0%, #ffffff 100%);
+}
+
+/* Imagen actual */
+.current-image-card .card-header {
+    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+}
+
+.current-image-card .card-body {
+    background: linear-gradient(135deg, #fff8e1 0%, #ffffff 100%);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .editar-title {
+        font-size: 2rem;
+    }
+    
+    .card-header {
+        padding: 1rem;
+    }
+}
+</style>
+
+<!-- TOAST de mensajes Django -->
+{% if messages %}
+<div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index: 1080; right: 0; top: 0;">
+  {% for message in messages %}
+  <div class="toast align-items-center text-bg-success border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+    <div class="d-flex">
+      <div class="toast-body d-flex align-items-center">
+        <i class="fas fa-check-circle me-2"></i>
+        {{ message }}
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="container-fluid mt-4">
+    <!-- Header principal -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg editar-header">
+                <div class="card-body text-white py-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h1 class="editar-title mb-2">
+                                <i class="fas fa-edit me-3"></i>Editar Fotografía
+                            </h1>
+                            <div class="editar-subtitle">
+                                <i class="fas fa-camera me-2"></i>
+                                Modifica la imagen y actualiza la información
+                            </div>
+                        </div>
+                        <a href="{% url 'listar_fotografias' %}" class="btn btn-light btn-sm d-flex align-items-center shadow-sm">
+                            <i class="fas fa-arrow-left me-2"></i> Volver
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <!-- Formulario principal -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>Formulario de Edición
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.imagen.id_for_label }}" class="form-label">
+                                <i class="fas fa-image me-2 text-primary"></i>Nueva Imagen
+                            </label>
+                            <input type="file" class="form-control form-control-lg" id="{{ form.imagen.id_for_label }}" name="{{ form.imagen.name }}" accept="image/*">
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Selecciona una nueva imagen para reemplazar la actual. Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 10MB.
+                            </div>
+                            {% if form.imagen.errors %}
+                                <div class="text-danger small mt-2">{{ form.imagen.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if form.descripcion %}
+                        <div class="mb-4">
+                            <label for="{{ form.descripcion.id_for_label }}" class="form-label">
+                                <i class="fas fa-align-left me-2 text-info"></i>Descripción
+                            </label>
+                            <textarea class="form-control" id="{{ form.descripcion.id_for_label }}" name="{{ form.descripcion.name }}" rows="3" placeholder="Agrega una descripción opcional...">{{ form.descripcion.value|default:'' }}</textarea>
+                            {% if form.descripcion.errors %}
+                                <div class="text-danger small mt-2">{{ form.descripcion.errors }}</div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Preview de la nueva imagen -->
+                        <div id="previewContainer" class="mb-4" style="display: none;">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-eye me-2 text-success"></i>Vista previa de la nueva imagen:
+                            </label>
+                            <div class="text-center">
+                                <img id="previewImg" src="" alt="Vista previa" class="img-fluid rounded shadow">
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{% url 'listar_fotografias' %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i> Volver a la galería
+                            </a>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-outline-warning btn-lg" onclick="resetForm()">
+                                    <i class="fas fa-undo me-2"></i> Restablecer
+                                </button>
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-save me-2"></i> Guardar cambios
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar con información -->
+        <div class="col-lg-4">
+            <!-- Información de la fotografía -->
+            <div class="card shadow-sm mb-4 sidebar-card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Información de la Fotografía
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">ID:</label>
+                        <p class="form-control-plaintext">#{{ foto.id }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Fecha de subida:</label>
+                        <p class="form-control-plaintext">
+                            <i class="fas fa-calendar me-1"></i>
+                            {{ foto.fecha_subida|date:"d M Y, H:i" }}
+                        </p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Subido por:</label>
+                        <p class="form-control-plaintext">
+                            <i class="fas fa-user me-1"></i>
+                            {{ foto.subido_por.get_full_name|default:foto.subido_por.username }}
+                        </p>
+                    </div>
+                    
+                    {% if foto.encuesta %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Encuesta asociada:</label>
+                        <p class="form-control-plaintext">
+                            <a href="{% url 'detalle_encuesta' foto.encuesta.id %}" class="text-decoration-none">
+                                <i class="fas fa-file-text me-1"></i>
+                                {{ foto.encuesta.titulo }} <i class="fas fa-external-link-alt ms-1"></i>
+                            </a>
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Imagen actual -->
+            <div class="card shadow-sm current-image-card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-image me-2"></i>Imagen Actual
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    {% if foto.imagen %}
+                        <img src="{{ foto.imagen.url }}" alt="Imagen actual" class="img-fluid rounded shadow" style="max-height: 200px; max-width: 100%; object-fit: contain;">
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            No hay imagen disponible.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+<div class="modal fade" id="modalConfirmarEliminacion" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-danger text-white border-0">
+        <h5 class="modal-title d-flex align-items-center">
+          <i class="fas fa-exclamation-triangle me-3 fs-4"></i>
+          <span>Confirmar Eliminación</span>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center py-4">
+        <div class="mb-4">
+          <i class="fas fa-trash text-danger" style="font-size: 3rem;"></i>
+        </div>
+        <h6 class="fw-bold text-dark mb-3">¿Estás seguro de eliminar esta fotografía?</h6>
+        <p class="text-muted mb-4">
+          Esta acción no se puede deshacer. La fotografía será eliminada permanentemente del sistema.
+        </p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center">
+        <button type="button" class="btn btn-outline-secondary btn-lg px-4" data-bs-dismiss="modal">
+          <i class="fas fa-times me-2"></i>Cancelar
+        </button>
+        <a href="{% url 'borrar_fotografia' foto.id %}" class="btn btn-danger btn-lg px-4">
+          <i class="fas fa-trash me-2"></i> Eliminar
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Preview de la nueva imagen
+document.getElementById('{{ form.imagen.id_for_label }}').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const previewContainer = document.getElementById('previewContainer');
+    const previewImg = document.getElementById('previewImg');
+    
+    if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            previewContainer.style.display = 'block';
+            previewContainer.style.animation = 'fadeInUp 0.6s ease-out';
+        };
+        reader.readAsDataURL(file);
+    } else {
+        previewContainer.style.display = 'none';
+    }
+});
+
+// Función para restablecer formulario
+function resetForm() {
+    document.querySelector('form').reset();
+    document.getElementById('previewContainer').style.display = 'none';
+}
+
+// Mostrar toasts
+document.addEventListener('DOMContentLoaded', function() {
+    var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+    toastElList.forEach(function(toastEl) {
+        var toast = new bootstrap.Toast(toastEl);
+        toast.show();
+    });
+});
+</script>
+{% endblock %}

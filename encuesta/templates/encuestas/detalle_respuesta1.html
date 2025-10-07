@@ -1,0 +1,232 @@
+<div class="container-fluid">
+    <!-- Header de la respuesta -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-1 fw-bold">
+                                <i class="fas fa-chart-line me-2"></i>
+                                Detalle de Respuestas
+                            </h4>
+                            <p class="mb-0 opacity-75 small">Respuestas completas del encuestado</p>
+                        </div>
+                        <div class="text-end">
+                            <div class="d-flex align-items-center mb-1">
+                                <i class="fas fa-user me-1"></i>
+                                <span class="fw-bold">{{ respuesta.encuestado.nombre }} {{ respuesta.encuestado.apellido }}</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-calendar me-1"></i>
+                                <span class="small opacity-75">{{ respuesta.fecha_creacion|date:"d/m/Y H:i" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información de la encuesta -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6 class="fw-bold text-dark mb-1">
+                                <i class="fas fa-poll me-2 text-primary"></i>
+                                {{ respuesta.encuesta.titulo }}
+                            </h6>
+                            {% if respuesta.encuesta.descripcion %}
+                            <p class="text-muted mb-0 small">{{ respuesta.encuesta.descripcion|truncatewords:10 }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="d-flex align-items-center justify-content-end">
+                                <div class="me-3">
+                                    <div class="fw-bold text-dark">{{ respuestas_agrupadas|length }}</div>
+                                    <small class="text-muted">Preguntas</small>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark">{{ respuesta.fecha_creacion|date:"d/m/Y" }}</div>
+                                    <small class="text-muted">Fecha</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de preguntas y respuestas -->
+    <div class="row">
+        <div class="col-12">
+            {% for pregunta, respuestas in respuestas_agrupadas.items %}
+            <div class="card border-0 shadow-sm mb-3 pregunta-card" data-pregunta="{{ forloop.counter }}">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-start mb-2">
+                        <div class="pregunta-numero me-2">
+                            <span class="badge bg-primary rounded-pill fs-6 px-2 py-1">{{ forloop.counter }}</span>
+                        </div>
+                        <div class="pregunta-contenido flex-grow-1">
+                            <h6 class="fw-bold text-dark mb-2 pregunta-texto">
+                                {{ pregunta }}
+                            </h6>
+                            
+                            <!-- Respuestas -->
+                            <div class="respuestas-container">
+                                {% for respuesta_texto in respuestas %}
+                                <div class="respuesta-item mb-1">
+                                    <div class="d-flex align-items-center p-2 bg-success bg-opacity-10 rounded-2 border border-success border-opacity-25">
+                                        <div class="me-2">
+                                            <i class="fas fa-check-circle text-success"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <span class="text-dark fw-semibold small">{{ respuesta_texto }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-exclamation-circle text-muted" style="font-size: 4rem;"></i>
+                    </div>
+                    <h4 class="text-muted mb-3">No hay respuestas</h4>
+                    <p class="text-muted mb-0">No se encontraron respuestas para esta encuesta.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Estilos personalizados -->
+<style>
+.pregunta-card {
+    transition: all 0.3s ease;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.pregunta-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+.pregunta-texto {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.5;
+    min-height: 4.5em;
+}
+
+.respuesta-item {
+    transition: all 0.3s ease;
+}
+
+.respuesta-item:hover {
+    transform: translateX(5px);
+}
+
+.respuestas-container {
+    animation: fadeInUp 0.5s ease forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animaciones de entrada para las preguntas */
+.pregunta-card {
+    animation: fadeInUp 0.6s ease forwards;
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+.pregunta-card:nth-child(1) { animation-delay: 0.1s; }
+.pregunta-card:nth-child(2) { animation-delay: 0.2s; }
+.pregunta-card:nth-child(3) { animation-delay: 0.3s; }
+.pregunta-card:nth-child(4) { animation-delay: 0.4s; }
+.pregunta-card:nth-child(5) { animation-delay: 0.5s; }
+.pregunta-card:nth-child(6) { animation-delay: 0.6s; }
+
+/* Efectos de hover en las respuestas */
+.bg-success.bg-opacity-10 {
+    transition: all 0.3s ease;
+}
+
+.bg-success.bg-opacity-10:hover {
+    background-color: rgba(25, 135, 84, 0.2) !important;
+    transform: scale(1.02);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .display-6 {
+        font-size: 1.5rem;
+    }
+    
+    .lead {
+        font-size: 1rem;
+    }
+    
+    .pregunta-texto {
+        -webkit-line-clamp: 2;
+        min-height: 3em;
+    }
+}
+</style>
+
+<!-- Scripts -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Efectos de hover en las tarjetas de preguntas
+    const preguntaCards = document.querySelectorAll('.pregunta-card');
+    preguntaCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+    
+    // Efectos de hover en las respuestas
+    const respuestaItems = document.querySelectorAll('.respuesta-item');
+    respuestaItems.forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateX(5px)';
+        });
+        
+        item.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateX(0)';
+        });
+    });
+    
+    // Animación de entrada escalonada para las respuestas
+    const respuestasContainers = document.querySelectorAll('.respuestas-container');
+    respuestasContainers.forEach((container, index) => {
+        container.style.animationDelay = `${index * 0.1}s`;
+    });
+});
+</script>

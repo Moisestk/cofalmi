@@ -1,0 +1,387 @@
+{% extends "base.html" %}
+{% block contenido %}
+
+<!-- TOAST de mensajes mejorado -->
+{% if messages %}
+<div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;">
+  {% for message in messages %}
+  <div class="toast align-items-center text-bg-success border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+    <div class="d-flex">
+      <div class="toast-body d-flex align-items-center">
+        <i class="fas fa-check-circle me-2"></i>
+        {{ message }}
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="container-fluid mt-4">
+    <!-- Header de verificación de respuestas -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                <div class="card-body text-white py-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h1 class="mb-2 display-6 fw-bold">
+                                <i class="fas fa-clipboard-check me-3"></i>
+                                Verificación de Respuestas
+                            </h1>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-poll me-2"></i>
+                                <span class="lead mb-0">Encuesta: <strong>{{ respuesta.encuesta.titulo }}</strong></span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user me-2"></i>
+                                <span class="mb-0">Encuestado: <strong>{{ respuesta.encuestado.nombre }} {{ respuesta.encuestado.apellido }}</strong></span>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="mb-2">
+                                <i class="fas fa-calendar-alt me-2"></i>
+                                <small class="opacity-75">{{ respuesta.fecha_creacion|date:"d \d\e F \d\e Y \a \l\a\s H:i" }}</small>
+                            </div>
+                            <div class="badge bg-white bg-opacity-25 fs-6 px-3 py-2">
+                                <i class="fas fa-check-circle me-1"></i>
+                                Respuesta Completada
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Mensaje de verificación -->
+                    <div class="alert alert-light alert-dismissible fade show mb-0" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle text-primary me-3 fs-4"></i>
+                            <div>
+                                <strong>Revisa tus respuestas antes de continuar</strong>
+                                <br>
+                                <small class="text-muted">Verifica que todas las respuestas sean correctas. Una vez confirmadas, no podrás modificarlas.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumen de respuestas -->
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Preguntas y respuestas -->
+            {% for pregunta, respuestas in respuestas_agrupadas.items %}
+            <div class="card mb-4 border-0 shadow-sm respuesta-card" data-pregunta="{{ forloop.counter }}">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="pregunta-numero me-3">
+                            <span class="badge bg-success rounded-pill fs-6 px-3 py-2">{{ forloop.counter }}</span>
+                        </div>
+                        <div class="pregunta-contenido flex-grow-1">
+                            <h5 class="fw-bold text-dark mb-3 pregunta-texto">
+                                {{ pregunta }}
+                            </h5>
+                            
+                            <!-- Respuesta -->
+                            <div class="respuesta-container">
+                                <div class="alert alert-success border-0 shadow-sm">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-check-circle text-success me-3 fs-5"></i>
+                                        <div class="flex-grow-1">
+                                            <span class="fw-semibold text-dark">{{ respuestas|join:", " }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Botones de acción -->
+            <div class="card border-0 shadow-lg mt-4">
+                <div class="card-body p-4 text-center">
+                    <h5 class="fw-bold text-dark mb-4">
+                        <i class="fas fa-question-circle text-warning me-2"></i>
+                        ¿Estás seguro de que estas respuestas son correctas?
+                    </h5>
+                    
+                    <div class="d-grid gap-3 d-md-flex justify-content-md-center">
+                        <button type="button" 
+                                class="btn btn-success btn-lg px-5 py-3 shadow-sm" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#modalConfirmarRespuestas"
+                                id="btnConfirmar">
+                            <i class="fas fa-check me-2"></i> 
+                            <span class="btn-text">Sí, Confirmar y Continuar</span>
+                            <span class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                        </button>
+                        
+                        <button type="button" 
+                                class="btn btn-warning btn-lg px-5 py-3 shadow-sm" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#modalEditarRespuestas"
+                                id="btnEditar">
+                            <i class="fas fa-edit me-2"></i> 
+                            <span class="btn-text">No, Editar Respuestas</span>
+                        </button>
+                        
+                        <a href="{% url 'listar_encuestas' %}" 
+                           class="btn btn-outline-secondary btn-lg px-5 py-3">
+                            <i class="fas fa-arrow-left me-2"></i> 
+                            Volver a Encuestas
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmar Respuestas -->
+<div class="modal fade" id="modalConfirmarRespuestas" tabindex="-1" aria-labelledby="modalConfirmarRespuestasLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-success text-white border-0">
+        <h5 class="modal-title d-flex align-items-center" id="modalConfirmarRespuestasLabel">
+          <i class="fas fa-shield-alt me-3 fs-4"></i>
+          <span>Confirmar Respuestas</span>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body text-center py-4">
+        <div class="mb-4">
+          <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+        </div>
+        <h6 class="fw-bold text-dark mb-3">¿Confirmar estas respuestas?</h6>
+        <p class="text-muted mb-4">
+          Una vez confirmadas, las respuestas se guardarán definitivamente y serás redirigido para realizar otra encuesta.
+          <br><strong>¿Estás seguro de continuar?</strong>
+        </p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center">
+        <button type="button" class="btn btn-success btn-lg px-4 me-2" onclick="confirmarRespuestas()">
+          <i class="fas fa-check me-2"></i>Sí, Confirmar y Continuar
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-lg px-4" data-bs-dismiss="modal">
+          <i class="fas fa-times me-2"></i>Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Respuestas -->
+<div class="modal fade" id="modalEditarRespuestas" tabindex="-1" aria-labelledby="modalEditarRespuestasLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-warning text-dark border-0">
+        <h5 class="modal-title d-flex align-items-center" id="modalEditarRespuestasLabel">
+          <i class="fas fa-edit me-3 fs-4"></i>
+          <span>Editar Respuestas</span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body text-center py-4">
+        <div class="mb-4">
+          <i class="fas fa-edit text-warning" style="font-size: 3rem;"></i>
+        </div>
+        <h6 class="fw-bold text-dark mb-3">¿Deseas editar las respuestas?</h6>
+        <p class="text-muted mb-4">
+          Si deseas modificar alguna respuesta, serás redirigido de vuelta a la encuesta para editarla.
+          <br><strong>¿Quieres continuar con la edición?</strong>
+        </p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center">
+        <button type="button" class="btn btn-warning btn-lg px-4 me-2" onclick="editarRespuestas()">
+          <i class="fas fa-edit me-2"></i>Sí, Editar
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-lg px-4" data-bs-dismiss="modal">
+          <i class="fas fa-times me-2"></i>Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts mejorados -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Mostrar toasts
+    var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+    toastElList.forEach(function(toastEl) {
+        var toast = new bootstrap.Toast(toastEl);
+        toast.show();
+    });
+
+    // Efectos en las tarjetas de respuestas
+    const respuestaCards = document.querySelectorAll('.respuesta-card');
+    respuestaCards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+    });
+
+    // Efectos de hover en las respuestas
+    const respuestaContainers = document.querySelectorAll('.respuesta-container');
+    respuestaContainers.forEach(container => {
+        container.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateX(5px)';
+            this.style.transition = 'transform 0.3s ease';
+        });
+        
+        container.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateX(0)';
+        });
+    });
+
+    // Efectos en los botones
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.transition = 'transform 0.3s ease';
+        });
+        
+        button.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+
+function confirmarRespuestas() {
+    // Mostrar spinner en el botón
+    const btnConfirmar = document.getElementById('btnConfirmar');
+    const btnText = btnConfirmar.querySelector('.btn-text');
+    const spinner = btnConfirmar.querySelector('.spinner-border');
+    
+    btnText.textContent = 'Confirmando...';
+    spinner.classList.remove('d-none');
+    btnConfirmar.disabled = true;
+    
+    // Simular confirmación (aquí podrías hacer una petición AJAX si necesitas)
+    setTimeout(function() {
+        // Redirigir a la página de selección de encuestas para realizar otra
+        window.location.href = "{% url 'seleccionar_encuesta_encuestado' %}";
+    }, 1500);
+}
+
+function editarRespuestas() {
+    // Redirigir de vuelta a la encuesta para editarla
+    const encuestaId = {{ respuesta.encuesta.id }};
+    const encuestadoId = {{ respuesta.encuestado.id }};
+    
+    // Mostrar spinner
+    const btnEditar = document.getElementById('btnEditar');
+    const btnText = btnEditar.querySelector('.btn-text');
+    
+    btnText.textContent = 'Redirigiendo...';
+    btnEditar.disabled = true;
+    
+    // Redirigir a la URL correcta
+    setTimeout(function() {
+        window.location.href = `/aplicar/${encuestaId}/${encuestadoId}/`;
+    }, 1000);
+}
+</script>
+
+<style>
+/* Animaciones personalizadas */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.respuesta-card {
+    animation: fadeInUp 0.6s ease-out;
+    transition: all 0.3s ease;
+}
+
+.respuesta-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+.respuesta-container {
+    transition: all 0.3s ease;
+}
+
+.respuesta-container:hover {
+    transform: translateX(5px);
+}
+
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.alert {
+    transition: all 0.3s ease;
+}
+
+.alert:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .respuesta-card .d-flex {
+        flex-direction: column;
+    }
+    
+    .pregunta-numero {
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+    
+    .d-grid.gap-3.d-md-flex {
+        flex-direction: column;
+    }
+    
+    .btn-lg {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Efectos especiales */
+.badge {
+    transition: all 0.3s ease;
+}
+
+.badge:hover {
+    transform: scale(1.05);
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border-left: 4px solid #28a745;
+}
+
+.alert-light {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-left: 4px solid #007bff;
+}
+</style>
+{% endblock %}

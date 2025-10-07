@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+    {% block pagetitle %}<h1>Agregar Usuarios</h1>{% endblock %}
+    
+    {% block navegacion %}
+        <li class="breadcrumb-item"><a href="/usuarios">Usuarios</a></li>
+        <li class="breadcrumb-item active">vista</li>
+    {% endblock %} 
+    
+    {% block contenido %}
+    {% load static %}
+<div class="card">
+    <form method="post" id="changePasswordForm">
+        {% csrf_token %}
+        <div class="card-header">
+            <h3 class="card-title">Nuevo Usuario</h3>
+            <div class="card-tools">
+            </div>
+        </div>
+        <div class="card-body">
+            {% include './form1.html'%}
+        </div>
+       
+        <!-- /.card-footer -->
+        <!-- /.card-body -->
+        <div class="card-footer">
+            <button type="submit" class="btn btn-sm btn-primary" id="action">Crear</button>
+            <a href="/usuarios" class="btn btn-sm btn-danger">Cancelar</a>
+        </div>
+    </form>
+</div>
+<!-- /.card -->
+{% endblock %}
+
+{%block scripts%}
+<script src="{% static 'js/jquery-3.7.0.min.js' %}"></script>
+<script src="{% static 'js/usuarios/nuevo_usuario.js'%}"></script>
+{%endblock%}
+

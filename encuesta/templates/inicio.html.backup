@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block contenido %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card info-card sales-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Encuestas <span>| Totales</span></h5>
+                            <div class="d-flex align-items-center">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-file-earmark-text fs-3"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h2 class="mb-0">{{ total_encuestas }}</h2>
+                                </div>
+                            </div>
+                            <div style="height: 10px;">
+                                <canvas id="encuestasChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card info-card sales-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Encuestados <span>| Totales</span></h5>
+                            <div class="d-flex align-items-center">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-journal-check fs-3"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h2 class="mb-0">{{ total_encuestados }}</h2>
+                                </div>
+                            </div>
+                            <div style="height: 10px;">
+                                <canvas id="encuestadosChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card info-card sales-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Comunidades <span>| Totales</span></h5>
+                            <div class="d-flex align-items-center">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-people-fill fs-3"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h2 class="mb-0">{{ total_comunidades }}</h2>
+                                </div>
+                            </div>
+                            <div style="height: 10px;">
+                                <canvas id="comunidadesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'js/inicio/inicio.js' %}"></script> 
+{% endblock %}

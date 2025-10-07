@@ -1,0 +1,521 @@
+{% extends "base.html" %}
+{% block contenido %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/dataTables.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/detalle_encuesta.css' %}">
+<div class="container mt-3" id="main-content">
+   <!-- TOAST de mensajes Django michael-->
+  {% if messages %}
+  <div aria-live="polite" aria-atomic="true" class="position-absolute top-0 end-0 p-3" style="z-index: 1080; right: 0; top: 0;">
+    {% for message in messages %}
+    <div class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3500">
+      <div class="d-flex">
+        <div class="toast-body">
+          {{ message }}
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  
+    <!-- TOAST para AJAX -->
+    <div aria-live="polite" aria-atomic="true" class="position-absolute top-0 end-0 p-3" style="z-index: 1080; right: 0; top: 0;">
+      <div id="toast-container"></div>
+    </div>
+
+<div class="d-flex justify-content-between mb-3">
+    <h2>Lista de Encuestados</h2>
+    <a href="#" class="btn btn-outline-primary btn-sm d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#modalCrearEncuestado">
+        <i class="fa fa-plus me-1"></i> Añadir Nuevo Encuestado
+    </a>
+</div>
+<div style="overflow-x:auto;">
+{% if encuestados %}
+<table id="tabla-encuestados" class="table table-striped text-center align-middle">
+    <thead>
+        <tr>
+            <th style="width: 40px;">#</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th style="max-width: 120px;">Cédula</th>
+            <th style="width: 120px;">Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+                {% for encuestado in encuestados %}
+                <!-- ID único en la fila para que JavaScript la encuentre -->
+                <tr id="encuestado-row-{{ encuestado.id }}">
+                    <td>{{ forloop.counter }}</td>
+                    <!-- Clases en las celdas para que JavaScript las actualice -->
+                    <td class="nombre" style="max-width:180px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">
+                        {{ encuestado.nombre|truncatechars:20 }}
+                    </td>
+                    <td class="apellido" style="max-width:180px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">
+                        {{ encuestado.apellido|truncatechars:20 }}
+                    </td>
+                    <td class="cedula">{{ encuestado.tipo_cedula }}-{{ encuestado.cedula_numero }}</td>
+                    <td style="width: 120px;">
+                        <div class="d-flex justify-content-center flex-wrap gap-1">
+                  <!-- boton editar Encuestado -->
+                    <button
+                     type="button"
+                    class="btn btn-primary btn-sm btn-editar-encuestado"
+                    title="Editar"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalEditarEncuestado"
+                    data-id="{{ encuestado.id }}"
+                    data-nombre="{{ encuestado.nombre }}"
+                    data-apellido="{{ encuestado.apellido }}"
+                    data-tipo_cedula="{{ encuestado.tipo_cedula }}"
+                    data-cedula_numero="{{ encuestado.cedula_numero }}"
+                    data-genero="{{ encuestado.genero }}"
+                    data-telefono="{{ encuestado.telefono|default:'' }}"
+                    data-direccion="{{ encuestado.direccion|default:'' }}"
+                    data-cargo="{{ encuestado.cargo|default:'' }}"
+                    data-ubicacion="{{ encuestado.ubicacion_administrativa|default:'' }}">
+                    <i class="fa fa-edit"></i>
+                    </button> 
+
+                    <a href="#" class="btn btn-danger btn-sm" title="Enviar a papelera"
+                      data-bs-toggle="modal"
+                      data-bs-target="#borrarEncuestadoModal"
+                      data-id="{{ encuestado.id }}"
+                      data-nombre="{{ encuestado.nombre }}"
+                      data-apellido="{{ encuestado.apellido }}">
+                        <i class="fa fa-trash"></i>
+                    </a>
+
+                    <a href="#" class="btn btn-info btn-sm" title="Detalles"
+                    data-bs-toggle="modal"
+                    data-bs-target="#detalleModal"
+                    data-nombre="{{ encuestado.nombre }}"
+                    data-apellido="{{ encuestado.apellido }}"
+                    data-cedula="{{ encuestado.tipo_cedula }}-{{ encuestado.cedula_numero }}"
+                    data-genero="{{ encuestado.get_genero_display }}"
+                    data-telefono="{{ encuestado.telefono }}"
+                    data-direccion="{{ encuestado.direccion }}"
+                    data-fecha="{{ encuestado.fecha_registro|date:'d/m/Y H:i' }}"
+                    data-cargo="{{ encuestado.cargo }}"
+                    data-ubicacion="{{ encuestado.ubicacion_administrativa }}">
+                     <i class="fa fa-ellipsis"></i>
+                 </a>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-info text-center mt-3" style="background-color: #c7f4fa; color: #21829c;">
+    No hay encuestados registrados.
+</div>
+{% endif %}
+</div>
+</div>
+
+<!-- Modal Detalle Encuestado -->
+<div class="modal fade" id="detalleModal" tabindex="-1" aria-labelledby="detalleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-info text-white border-0">
+        <h5 class="modal-title d-flex align-items-center" id="detalleModalLabel">
+          <i class="fas fa-user-circle me-3 fs-4"></i>
+          <span>Detalles del Encuestado</span>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="text-center mb-4">
+          <i class="fas fa-id-card text-info" style="font-size: 3rem;"></i>
+        </div>
+        <div class="row g-3">
+          <div class="col-6">
+            <div class="card border-0 shadow-sm">
+              <div class="card-body">
+                <h6 class="fw-bold text-primary mb-2">
+                  <i class="fas fa-user me-2"></i>Información Personal
+                </h6>
+                <p class="mb-2"><strong>Nombre:</strong> <span id="modal-nombre"></span></p>
+                <p class="mb-2"><strong>Apellido:</strong> <span id="modal-apellido"></span></p>
+                <p class="mb-2"><strong>Cédula:</strong> <span id="modal-cedula"></span></p>
+                <p class="mb-0"><strong>Género:</strong> <span id="modal-genero"></span></p>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card border-0 shadow-sm">
+              <div class="card-body">
+                <h6 class="fw-bold text-success mb-2">
+                  <i class="fas fa-phone me-2"></i>Información de Contacto
+                </h6>
+                <p class="mb-2"><strong>Teléfono:</strong> <span id="modal-telefono"></span></p>
+                <p class="mb-2"><strong>Dirección:</strong> <span id="modal-direccion"></span></p>
+                <p class="mb-2"><strong>Cargo:</strong> <span id="modal-cargo"></span></p>
+                <p class="mb-0"><strong>Ubicación:</strong> <span id="modal-ubicacion"></span></p>
+              </div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="card border-0 shadow-sm">
+              <div class="card-body text-center">
+                <h6 class="fw-bold text-warning mb-2">
+                  <i class="fas fa-calendar me-2"></i>Información del Sistema
+                </h6>
+                <p class="mb-0"><strong>Fecha de Registro:</strong> <span id="modal-fecha"></span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0 justify-content-center">
+        <button type="button" class="btn btn-info btn-lg px-4" data-bs-dismiss="modal">
+          <i class="fas fa-times me-2"></i>Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="borrarEncuestadoModal" tabindex="-1" aria-labelledby="borrarEncuestadoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <form id="formPapeleraEncuestado" method="post">
+        {% csrf_token %}
+        <div class="modal-header bg-warning text-dark border-0">
+          <h5 class="modal-title d-flex align-items-center" id="borrarEncuestadoModalLabel">
+            <i class="fas fa-trash-restore me-3 fs-4"></i>
+            <span>Enviar a Papelera</span>
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body text-center py-4">
+          <div class="mb-4">
+            <i class="fas fa-user-times text-warning" style="font-size: 3rem;"></i>
+          </div>
+          <h6 class="fw-bold text-dark mb-3">¿Enviar a papelera?</h6>
+          <div class="text-muted mb-4">
+            <p class="mb-2">El encuestado</p>
+            <div class="d-flex justify-content-center flex-wrap gap-2 mb-2">
+              <span class="nombre-truncado" id="modal-borrar-nombre"></span>
+              <span class="nombre-truncado" id="modal-borrar-apellido"></span>
+            </div>
+            <p class="mb-1">será movido a la papelera.</p>
+            <p class="mb-0">Podrás restaurarlo más tarde si es necesario.</p>
+          </div>
+        </div>
+        <div class="modal-footer border-0 justify-content-center">
+          <button type="submit" class="btn btn-warning btn-lg px-4 me-2">
+            <i class="fas fa-trash me-2"></i>Enviar a Papelera
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-lg px-4" data-bs-dismiss="modal">
+            <i class="fas fa-times me-2"></i>Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Crear Encuestado -->
+<div class="modal fade" id="modalCrearEncuestado" tabindex="-1" aria-labelledby="modalCrearEncuestadoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-primary text-white border-0">
+        <h5 class="modal-title d-flex align-items-center" id="modalCrearEncuestadoLabel">
+          <i class="fas fa-user-plus me-3 fs-4"></i>
+          <span>Añadir Nuevo Encuestado</span>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <form id="formCrearEncuestado" class="p-4" method="POST" action="{% url 'crear_encuestado' %}">
+        {% csrf_token %}
+        <div class="mb-4 text-center">
+          <i class="fas fa-user-plus text-primary" style="font-size: 3rem;"></i>
+        </div>
+        <div class="row g-3">
+          <!-- Primera fila: Nombre y Apellido -->
+          <div class="col-md-6">
+            <div class="form-floating">
+              <input type="text" name="nombre" id="modal_nombre" class="form-control form-control-lg" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,}" minlength="3" maxlength="100" required placeholder="Nombre del encuestado">
+              <label for="modal_nombre">
+                <i class="fas fa-user me-2"></i>Nombre
+              </label>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-floating">
+              <input type="text" name="apellido" id="modal_apellido" class="form-control form-control-lg" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,}" minlength="3" maxlength="100" required placeholder="Apellido del encuestado">
+              <label for="modal_apellido">
+                <i class="fas fa-user me-2"></i>Apellido
+              </label>
+            </div>
+          </div>
+          
+          <!-- Segunda fila: Cédula y Género -->
+          <div class="col-md-6">
+            <label class="form-label fw-bold mb-2">
+              <i class="fas fa-id-card me-2"></i>Cédula:
+            </label>
+            <div class="input-group" style="height: 58px;">
+              <select name="tipo_cedula" id="modal_tipo_cedula" class="form-select" style="max-width: 80px; flex-shrink: 0;" required>
+                <option value="V">V</option>
+                <option value="E">E</option>
+              </select>
+              <input type="text" name="cedula_numero" id="modal_cedula_numero" class="form-control" pattern="\d{6,}" minlength="6" maxlength="9" required placeholder="Ej: 12345678" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+            </div>
+            <div id="cedula-error-msg" class="text-danger small mt-1"></div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold mb-2" for="modal_genero">
+              <i class="fas fa-venus-mars me-2"></i>Género
+            </label>
+            <div class="form-floating">
+              <select name="genero" id="modal_genero" class="form-select form-control-lg" required>
+                <option value="" disabled selected></option>
+                <option value="masculino">Masculino</option>
+                <option value="femenino">Femenino</option>
+              </select>
+
+            </div>
+          </div>
+          
+          <!-- Tercera fila: Teléfono y Dirección -->
+          <div class="col-md-6">
+            <label class="form-label fw-bold mb-2">
+              <i class="fas fa-phone me-2"></i>Teléfono: (Opcional)
+            </label>
+            <div class="input-group" style="height: 58px;">
+              <select name="telefono_prefijo" id="modal_telefono_prefijo" class="form-select" style="max-width: 110px; flex-shrink: 0;">
+                <option value="">Prefijo</option>
+                <option value="0412">0412</option>
+                <option value="0414">0414</option>
+                <option value="0416">0416</option>
+                <option value="0424">0424</option>
+                <option value="0426">0426</option>
+              </select>
+              <input type="text" name="telefono_numero" id="modal_telefono_numero" class="form-control" pattern="\d{7}" minlength="7" maxlength="7" placeholder="1234567" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold mb-2" for="modal_direccion">
+              <i class="fas fa-map-marker-alt me-2"></i>Dirección (Opcional)
+            </label>
+            <div class="form-floating">
+              <textarea name="direccion" id="modal_direccion" class="form-control form-control-lg" rows="2" maxlength="255" placeholder="Dirección del encuestado" style="height: 58px;"></textarea>
+
+            </div>
+          </div>
+          
+          <!-- Cuarta fila: Cargo y Ubicación Administrativa -->
+          <div class="col-md-6">
+            <div class="form-floating">
+              <input type="text" name="cargo" id="modal_cargo" class="form-control form-control-lg" maxlength="100" placeholder="Cargo del encuestado">
+              <label for="modal_cargo">
+                <i class="fas fa-briefcase me-2"></i>Cargo (Opcional)
+              </label>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-floating">
+              <input type="text" name="ubicacion_administrativa" id="modal_ubicacion_administrativa" class="form-control form-control-lg" maxlength="100" placeholder="Ubicación administrativa">
+              <label for="modal_ubicacion_administrativa">
+                <i class="fas fa-building me-2"></i>Ubicación Administrativa (Opcional)
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+          <button type="submit" class="btn btn-primary btn-lg px-4 me-2">
+            <i class="fas fa-save me-2"></i>Guardar Encuestado
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-lg px-4" data-bs-dismiss="modal">
+            <i class="fas fa-times me-2"></i>Cancelar
+          </button>
+        </div>
+        <div id="ajax-error-msg" class="alert alert-danger mt-3 d-none"></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Encuestado -->
+<div class="modal fade" id="modalEditarEncuestado" tabindex="-1" aria-labelledby="modalEditarEncuestadoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-success text-white border-0">
+        <h5 class="modal-title d-flex align-items-center" id="modalEditarEncuestadoLabel">
+          <i class="fas fa-user-edit me-3 fs-4"></i>
+          <span>Editar Encuestado</span>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <form id="formEditarEncuestado" class="p-4" method="POST" data-action-template="{% url 'editar_encuestado' 0 %}">
+        {% csrf_token %}
+        <div class="mb-4 text-center">
+          <i class="fas fa-user-edit text-success" style="font-size: 3rem;"></i>
+        </div>
+        <div class="row g-3">
+          <!-- Primera fila: Nombre y Apellido -->
+          <div class="col-md-6">
+            <div class="form-floating">
+              <input type="text" name="nombre" id="edit_nombre" class="form-control form-control-lg" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,}" minlength="3" maxlength="100" required placeholder="Nombre del encuestado">
+              <label for="edit_nombre">
+                <i class="fas fa-user me-2"></i>Nombre
+              </label>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-floating">
+              <input type="text" name="apellido" id="edit_apellido" class="form-control form-control-lg" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,}" minlength="3" maxlength="100" required placeholder="Apellido del encuestado">
+              <label for="edit_apellido">
+                <i class="fas fa-user me-2"></i>Apellido
+              </label>
+            </div>
+          </div>
+          
+          <!-- Segunda fila: Cédula y Género -->
+          <div class="col-md-6">
+            <label class="form-label fw-bold mb-2">
+              <i class="fas fa-id-card me-2"></i>Cédula:
+            </label>
+            <div class="input-group" style="height: 58px;">
+              <select name="tipo_cedula" id="edit_tipo_cedula" class="form-select" style="max-width: 80px; flex-shrink: 0;" required>
+                <option value="V">V</option>
+                <option value="E">E</option>
+              </select>
+              <input type="text" name="cedula_numero" id="edit_cedula_numero" class="form-control" pattern="\d{6,}" minlength="6" maxlength="9" required inputmode="numeric" placeholder="Número de cédula">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold mb-2" for="edit_genero">
+              <i class="fas fa-venus-mars me-2"></i>Género
+            </label>
+            <div class="form-floating">
+              <select name="genero" id="edit_genero" class="form-select form-control-lg" required>
+                <option value="" disabled></option>
+                <option value="masculino">Masculino</option>
+                <option value="femenino">Femenino</option>
+              </select>
+
+            </div>
+          </div>
+          
+          <!-- Tercera fila: Teléfono y Dirección -->
+          <div class="col-md-6">
+            <label class="form-label fw-bold mb-2">
+              <i class="fas fa-phone me-2"></i>Teléfono: (Opcional)
+            </label>
+            <div class="input-group" style="height: 58px;">
+              <select name="telefono_prefijo" id="edit_telefono_prefijo" class="form-select" style="max-width: 110px; flex-shrink: 0;">
+                <option value="">Prefijo</option>
+                <option value="0412">0412</option>
+                <option value="0414">0414</option>
+                <option value="0416">0416</option>
+                <option value="0424">0424</option>
+                <option value="0426">0426</option>
+              </select>
+              <input type="text" name="telefono_numero" id="edit_telefono_numero" class="form-control" pattern="\d{7}" minlength="7" maxlength="7" inputmode="numeric" placeholder="1234567">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold mb-2" for="edit_direccion">
+              <i class="fas fa-map-marker-alt me-2"></i>Dirección (Opcional)
+            </label>
+            <div class="form-floating">
+              <textarea name="direccion" id="edit_direccion" class="form-control form-control-lg" rows="2" maxlength="255" placeholder="Dirección del encuestado" style="height: 58px;"></textarea>
+            </div>
+          </div>
+          
+          <!-- Cuarta fila: Cargo y Ubicación Administrativa -->
+          <div class="col-md-6">
+            <div class="form-floating">
+              <input type="text" name="cargo" id="edit_cargo" class="form-control form-control-lg" maxlength="100" placeholder="Cargo del encuestado">
+              <label for="edit_cargo">
+                <i class="fas fa-briefcase me-2"></i>Cargo (Opcional)
+              </label>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-floating">
+              <input type="text" name="ubicacion_administrativa" id="edit_ubicacion_administrativa" class="form-control form-control-lg" maxlength="100" placeholder="Ubicación administrativa">
+              <label for="edit_ubicacion_administrativa">
+                <i class="fas fa-building me-2"></i>Ubicación Administrativa (Opcional)
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+          <button type="submit" class="btn btn-success btn-lg px-4 me-2">
+            <i class="fas fa-save me-2"></i>Guardar Cambios
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-lg px-4" data-bs-dismiss="modal">
+            <i class="fas fa-times me-2"></i>Cancelar
+          </button>
+        </div>
+        <div id="ajax-edit-error-msg" class="alert alert-danger mt-3 d-none"></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+<style>
+/* Controlar texto largo en modal de borrar encuestado */
+.nombre-truncado {
+    display: inline-block;
+    font-weight: bold;
+    background: #f8f9fa;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    cursor: help;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Asegurar que el modal mantenga un tamaño fijo */
+#borrarEncuestadoModal .modal-dialog {
+    max-width: 450px !important;
+    width: 90% !important;
+}
+
+#borrarEncuestadoModal .modal-content {
+    overflow: hidden !important;
+}
+
+#borrarEncuestadoModal .modal-body {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+}
+
+/* Controlar todos los elementos dentro del modal */
+#borrarEncuestadoModal * {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Contenedor flex para los nombres */
+#borrarEncuestadoModal .d-flex {
+    max-width: 100% !important;
+    overflow: hidden !important;
+}
+
+/* Párrafos dentro del modal */
+#borrarEncuestadoModal p {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+}
+</style>
+
+{% block scripts %}
+<script src="{% static 'js/jquery-3.7.0.min.js' %}"></script>
+<script src="{% static 'js/dataTables.min.js' %}"></script>
+<script src="{% static 'js/encuestados/listar.js' %}"></script>
+{% endblock %}

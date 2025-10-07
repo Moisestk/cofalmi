@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-size: 9px; margin: 8px; }
+        .fichas-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+        .ficha-horizontal {
+            border: 1px solid #333;
+            width: 48%;
+            min-width: 320px;
+            max-width: 390px;
+            height: auto;
+            margin: 6px 1%;
+            padding: 6px 8px 4px 8px;
+            box-sizing: border-box;
+            display: inline-block;
+            vertical-align: top;
+            position: relative;
+            page-break-inside: avoid;
+        }
+        .ficha-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2px;
+        }
+        .logo-izq, .logo-der {
+            font-weight: bold;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        .datos-encuestado-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2px;
+        }
+        .datos-encuestado-table td {
+            padding: 1px 2px 1px 0;
+            border-bottom: 1px solid #bbb;
+            vertical-align: bottom;
+        }
+        .datos-encuestado-table .label {
+            min-width: 60px;
+            font-weight: normal;
+            white-space: nowrap;
+        }
+        .datos-encuestado-table .linea {
+            width: 70px;
+        }
+        .preguntas {
+            margin-top: 2px;
+        }
+        .pregunta {
+            margin-bottom: 1px;
+        }
+        .pregunta strong {
+            font-weight: bold;
+        }
+        .pregunta em {
+            font-size: 8px;
+            display: inline;
+        }
+        @media print {
+            body { margin: 0; }
+            .ficha-horizontal {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="fichas-container">
+        {% for i in "1234" %}
+        <div class="ficha-horizontal">
+            <div class="ficha-header">
+                <div class="logo-izq">FALCÓN</div>
+                <div class="logo-der">CORFALMI</div>
+            </div>
+            <table class="datos-encuestado-table">
+                <tr>
+                    <td class="label">Nombre:</td>
+                    <td class="linea"></td>
+                    <td class="label">Cédula:</td>
+                    <td class="linea"></td>
+                </tr>
+                <tr>
+                    <td class="label">Ubicación adm.:</td>
+                    <td class="linea"></td>
+                    <td class="label">Cargo:</td>
+                    <td class="linea"></td>
+                </tr>
+                <tr>
+                    <td class="label">Dirección:</td>
+                    <td class="linea"></td>
+                    <td class="label">Teléfono:</td>
+                    <td class="linea"></td>
+                </tr>
+            </table>
+            <div class="preguntas">
+                {% for pregunta in preguntas %}
+                    <div class="pregunta">
+                        <strong>{{ pregunta.texto_pregunta }}</strong>
+                        {% if pregunta.tipo_respuesta == "si_no" %}
+                            &nbsp; sí ___ no ___
+                        {% elif pregunta.tipo_respuesta == "opcion_unica" or pregunta.tipo_respuesta == "opcion_multiple" %}
+                            <em>
+                                {% if pregunta.tipo_respuesta == "opcion_unica" %}Opción Única{% else %}Opción Múltiple{% endif %}
+                            </em>
+                            {% for opcion in pregunta.opciones.all %}
+                                <span>{{ opcion.texto_opcion }}</span>
+                            {% endfor %}
+                        {% elif pregunta.tipo_respuesta == "abierta" %}
+                            ____________________
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

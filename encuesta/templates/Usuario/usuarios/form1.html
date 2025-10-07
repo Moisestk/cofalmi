@@ -1,0 +1,137 @@
+
+<div class="row mt-3">
+  <div class="col-12">
+    <h5>Información del Usuario</h5>
+  </div>
+</div>
+<div class="row">
+  <div class="col-xl-4 col-xxl-4 col-sm-6">
+    <div class="form-group position-relative">
+      <label for="first_name">Nombre</label>
+      <input
+        class="form-control form-control-sm"
+        type="text"
+        name="first_name"
+        id="id_first_name"
+        value="{{form.first_name.value|default:''}}"
+      />
+      {{form.first_name.errors}}
+    </div>
+  </div>
+  <div class="col-xl-4 col-xxl-4 col-sm-6">
+    <div class="form-group position-relative">
+      <label for="last_name">Apellido</label>
+      <input
+        class="form-control form-control-sm"
+        type="text"
+        name="last_name"
+        id="id_last_name"
+        value="{{form.last_name.value|default:''}}"
+      />
+      {{form.last_name.errors}}
+    </div>
+  </div>
+  <div class="col-xl-4 col-xxl-4 col-sm-6">
+    <div class="form-group position-relative">
+      <label for="email">Email</label>
+      <input
+        class="form-control form-control-sm"
+        type="email"
+        name="email"
+        id="id_email"
+        value="{{form.email.value|default:''}}"
+      />
+      {{form.email.errors}}
+    </div>
+  </div>
+</div>
+{%if not editar%}
+
+
+
+<div class="row mt-4">
+  <div class="col-12">
+    <h5>Información de la Cuenta</h5>
+  </div>
+</div>
+  <div class="col-xl-4 col-xxl-4 col-sm-6">
+    <div class="form-group position-relative">
+      <label for="username">Nombre de Usuario</label>
+      <input
+        class="form-control form-control-sm"
+        type="text"
+        name="username"
+        id="id_username"
+        value="{{form.username.value|default:''}}"
+      />
+      {{form.username.errors}}
+    </div>
+  </div>
+
+<div class="row">
+  <div class="col-xl-4 col-xxl-4 col-sm-6">
+    <div class="form-group position-relative">
+      <label for="password1">Contraseña</label>
+      <input
+        class="form-control form-control-sm"
+        type="password"
+        name="password1"
+        id="password1"
+        value="{{form.password1.value|default:''}}"
+      />
+      <span class="show-pass eye p1" id="show-pass-p1">
+        <i class="fa fa-eye-slash"></i>
+        <i class="fa fa-eye"></i>
+      </span>
+      <ul class="errorlist">
+        <li id="errorPassword"></li>
+      </ul>
+    </div>
+  </div>
+  <div class="col-xl-4 col-xxl-4 col-sm-6">
+    <div class="form-group position-relative">
+      <label for="password2">Confirmar Contraseña</label>
+      <input
+        class="form-control form-control-sm"
+        type="password"
+        name="password2"
+        id="password2"
+        value="{{form.password2.value|default:''}}"
+      />
+      <span class="show-pass eye p2" id="show-pass-p2">
+        <i class="fa fa-eye-slash"></i>
+        <i class="fa fa-eye"></i>
+      </span>
+      <ul class="errorlist">
+        <li id="errorConfirm"></li>
+      </ul>
+    </div>
+  </div>
+</div>
+{%endif%}
+
+<div class="row mt-3">
+  <div class="col-12">
+    <h5>Información de Permisos</h5>
+  </div>
+</div>
+<div class="row">
+  <div class="col-xl-3 col-xxl-3 col-sm-6">
+    <div class="form-group position-relative">
+      <label for="grupo">Grupo</label>
+      <select
+        class="default-select form-control form-control-sm wide"
+        name="grupo"
+        id="grupo">
+
+        <option value="">Seleccione</option>
+        {% for grupo in grupos %} {%if grupo == grupoUsuario %}
+        <option value="{{grupo}}" selected>{{grupo}}</option>
+        {%else%}
+        <option value="{{grupo}}">{{grupo}}</option>
+        {%endif%} {%endfor%}
+      </select>
+      {{form.grupo.errors}}
+    </div>
+  </div>
+</div>

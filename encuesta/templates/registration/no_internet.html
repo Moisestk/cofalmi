@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="container mt-5">
+    <div class="alert alert-warning text-center">
+        <h4>Conexión a Internet requerida</h4>
+        <p>Para recuperar tu contraseña es necesario estar conectado a Internet.</p>
+        <a href="{% url 'login_view' %}" class="btn btn-primary">Volver al inicio de sesión</a>
+    </div>
+</div>
+{% endblock %}

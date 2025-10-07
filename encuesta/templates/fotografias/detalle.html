@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block contenido %}
+<div class="container mt-4">
+    <!-- Botón para abrir el modal (puedes ocultarlo y activarlo desde la galería) -->
+    <button type="button" class="btn btn-primary d-none" id="openFotoModalBtn" data-bs-toggle="modal" data-bs-target="#fotoModal">
+      Ver Fotografía
+    </button>
+
+    <!-- Modal Detalle Fotografía -->
+    <div class="modal fade" id="fotoModal" tabindex="-1" aria-labelledby="fotoModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title" id="fotoModalLabel">Detalle de Fotografía</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body row">
+            <div class="col-md-6 d-flex align-items-center justify-content-center">
+              {% if foto.imagen %}
+                <img src="{{ foto.imagen.url }}" class="img-fluid rounded shadow" alt="Fotografía">
+              {% else %}
+                <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="width:100%;height:250px;">Sin imagen</div>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              <h5 class="mb-2">Encuesta: <span class="fw-normal">{{ foto.encuesta.nombre|default:'Sin encuesta' }}</span></h5>
+              <p><strong>Descripción:</strong> {{ foto.descripcion|default:'Sin descripción.' }}</p>
+              <p><strong>Fecha subida:</strong> {{ foto.fecha_subida|date:'d M Y H:i' }}</p>
+              <a href="{% url 'editar_fotografia' foto.id %}" class="btn btn-outline-secondary mt-2">Editar</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+<script>
+  // Si quieres abrir el modal automáticamente al entrar a la página de detalle
+  document.addEventListener('DOMContentLoaded', function() {
+    var btn = document.getElementById('openFotoModalBtn');
+    if(btn) btn.click();
+  });
+</script>
+{% endblock %}

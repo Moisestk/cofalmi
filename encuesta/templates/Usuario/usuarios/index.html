@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% block regislis %} <a class="nav-link"> {% endblock %}
+
+{% block pagetitle %}<h1>Lista de Usuarios</h1>{% endblock %}
+
+{% block navegacion %}
+    <li class="breadcrumb-item"><a href="usuarios">Usuarios</a></li>
+    <li class="breadcrumb-item active">vista</li>
+{% endblock %}
+
+{% block contenido %}
+{% load static %}
+{% block css %}
+<link href="{% static 'css/dataTables.min.css' %}" rel="stylesheet">
+<style>
+.table-responsive {
+    overflow-x: auto;
+    overflow-y: visible;
+}
+.dataTables_wrapper {
+    overflow: visible !important;
+}
+.dropdown-menu {
+    z-index: 1050 !important;
+}
+</style>
+{% endblock %}
+
+<div class="container mt-3">
+    <!-- TOAST de mensajes -->
+    {% if messages %}
+    <div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index: 1080; right: 0; top: 0;">
+      {% for message in messages %}
+      <div class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3500">
+        <div class="d-flex">
+          <div class="toast-body">
+            {{ message }}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="d-flex justify-content-between mb-3">
+        <h2>Lista de Usuarios</h2>
+        <a href="/usuarios/nuevo" class="btn btn-outline-primary btn-sm d-flex align-items-center">
+        <i class="fa fa-plus me-1"></i> Nuevo Usuario
+        </a>
+    </div>
+    <div class="table-responsive">
+        {% if usuarios %}
+        <table id="tabla-usuarios" class="table table-striped text-center align-middle">
+            <thead>
+                <tr>
+                    <th style="width: 40px;">#</th>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Correo</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                    {% if grupo == "Administrador" or user.is_staff %}
+                    <th style="width: 120px;">Acción</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for usuario in usuarios %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td class="truncate-cell">{{ usuario.nombre|truncatechars:20 }}</td>
+                    <td class="truncate-cell">{{ usuario.apellido|truncatechars:20 }}</td>
+                    <td>{{ usuario.correo }}</td>
+                    <td>{{ usuario.tipo }}</td>
+                    <td>
+                        {% if usuario.estado %}
+                        <span class="badge bg-success">Activo</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Inactivo</span>
+                        {% endif %}
+                    </td>
+                    {% if grupo == "Administrador" or user.is_staff %}
+                    <td style="width: 120px;">
+                        <div class="d-flex justify-content-center flex-wrap gap-1">
+                            <div class="dropdown">
+                                <a href="#" class="btn btn-primary btn-sm" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fa fa-ellipsis-h"></i>
+                                </a>
+                                  <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="/cambiar_password/{{ usuario.id }}">
+                                            <i class="fa fa-key text-primary me-2"></i> Cambiar Contraseña
+                                        </a>
+                                    </li>
+                                    <li>
+                                        {% if not usuario.estado %}
+                                        <a class="dropdown-item btn-validar" href="javascript:void(0);" data-id="{{ usuario.id }}">
+                                            <i class="fa fa-check text-primary me-2"></i> Habilitar
+                                        </a>
+                                        {% else %}
+                                        <a class="dropdown-item btn-invalidar" href="javascript:void(0);" data-id="{{ usuario.id }}">
+                                            <i class="fa fa-times text-primary me-2"></i> Deshabilitar
+                                        </a>
+                                        {% endif %}
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="/usuarios/editar/{{ usuario.id }}">
+                                            <i class="fa fa-edit text-primary me-2"></i> Editar
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item btn-invalidar" href="javascript:void(0);"
+                                          data-bs-toggle="modal"
+                                          data-bs-target="#modalBorrarUsuario"
+                                          data-id="{{ usuario.id }}">
+                                            <i class="fa fa-trash text-primary me-2"></i> Eliminar
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="alert alert-info text-center mt-3" style="background-color: #c7f4fa; color: #21829c;">
+            No hay usuarios registrados.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal para confirmar eliminación -->
+<div class="modal fade" id="modalBorrarUsuario" tabindex="-1" aria-labelledby="modalBorrarUsuarioLabel" aria-hidden="true">
+ <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form id="formBorrarUsuario" method="POST" action="{% url 'borrar_usuario' 0 %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalBorrarUsuarioLabel">Borrar Usuario</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          ¿Está seguro(a) que desea eliminar este usuario?
+          <div class="form-group mt-3">
+            <label for="password">Ingrese la contraseña para validar la acción:</label>
+            <input type="password" name="password" id="password" class="form-control" required>
+          </div>
+          <div class="mt-3 text-right">
+            <button type="button" class="btn btn-sm btn-danger" data-bs-dismiss="modal">No</button>
+            <button type="submit" class="btn btn-sm btn-primary" id="action">Sí</button>
+          </div>
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} mt-2">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST de mensajes -->
+{% if messages %}
+<div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index: 1080; right: 0; top: 0;">
+  {% for message in messages %}
+  <div class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3500">
+    <div class="d-flex">
+      <div class="toast-body">
+        {{ message }}
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'js/jquery-3.7.0.min.js' %}"></script>
+<script src="{% static 'js/dataTables.min.js' %}"></script>
+<script src="{% static 'js/usuarios/usuarios.js' %}"></script>
+
+<script>
+$(document).ready(function() {
+    var tabla = $('#tabla-usuarios').DataTable({
+        "language": {
+            "processing": "Procesando...",
+            "lengthMenu": "Mostrar _MENU_ registros",
+            "zeroRecords": "No se encontraron resultados",
+            "emptyTable": "Ningún dato disponible en esta tabla",
+            "info": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_",
+            "infoEmpty": "Mostrando registros del 0 al 0 de un total de 0",
+            "infoFiltered": "(filtrado de un total de _MAX_ registros)",
+            "search": "Buscar:",
+            "paginate": {
+                "first": "Primero",
+                "last": "Último",
+                "next": "Siguiente",
+                "previous": "Anterior"
+            }
+        },
+        "info": false
+    });
+
+    // Toast Bootstrap: activar automáticamente los mensajes de Django
+    var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+    toastElList.forEach(function(toastEl) {
+        var toast = new bootstrap.Toast(toastEl);
+        toast.show();
+    });
+
+    // Modal de borrar usuario
+    $('#modalBorrarUsuario').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var id = button.data('id');
+        var form = $('#formBorrarUsuario');
+        form.attr('action', "{% url 'borrar_usuario' 0 %}".replace('0', id));
+    });
+});
+</script>
+{%endblock%}

@@ -1,0 +1,533 @@
+{% extends "base.html" %}
+{% load static %}
+{% block contenido %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+/* Animaciones personalizadas */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* Header principal con gradiente */
+.agregar-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.agregar-header .card-body {
+    padding: 2rem;
+}
+
+.agregar-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.agregar-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 1.5rem;
+}
+
+/* Cards mejoradas */
+.card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.card:hover {
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    transform: translateY(-2px);
+}
+
+.card-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    border-radius: 1rem 1rem 0 0;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.card:hover .card-header::before {
+    left: 100%;
+}
+
+.card-header h5, .card-header h6 {
+    color: #fff;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Formulario mejorado */
+.form-control {
+    border-radius: 0.75rem;
+    border: 2px solid #e9ecef;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+    transform: translateY(-1px);
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+/* Preview de imágenes */
+#previewContainer {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    border: 2px dashed #dee2e6;
+    transition: all 0.3s ease;
+}
+
+#previewContainer:hover {
+    border-color: #28a745;
+    background: linear-gradient(135deg, #f0fff4 0%, #e6ffe6 100%);
+}
+
+.preview-image {
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.preview-image:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.preview-image img {
+    border-radius: 0.75rem;
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+
+.preview-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.preview-size {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Botones mejorados */
+.btn {
+    border-radius: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+}
+
+.btn:hover::before {
+    width: 100%;
+    height: 100%;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+/* Sidebar mejorada */
+.sidebar-card {
+    animation: slideInRight 0.8s ease-out;
+}
+
+.sidebar-card .card-header {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+}
+
+.sidebar-card .card-body {
+    background: linear-gradient(135deg, #e6f7ff 0%, #ffffff 100%);
+}
+
+/* Galería existente */
+.existing-photos-card .card-header {
+    background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);
+}
+
+.existing-photos-card .card-body {
+    background: linear-gradient(135deg, #f8f5ff 0%, #ffffff 100%);
+}
+
+.existing-photo {
+    border-radius: 0.75rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.existing-photo:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.existing-photo img {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+}
+
+.photo-number {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .agregar-title {
+        font-size: 2rem;
+    }
+    
+    .card-header {
+        padding: 1rem;
+    }
+}
+</style>
+
+<!-- TOAST de mensajes Django -->
+{% if messages %}
+<div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index: 1080; right: 0; top: 0;">
+  {% for message in messages %}
+  <div class="toast align-items-center text-bg-success border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+    <div class="d-flex">
+      <div class="toast-body d-flex align-items-center">
+        <i class="fas fa-check-circle me-2"></i>
+        {{ message }}
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="container-fluid mt-4">
+    <!-- Header principal -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg agregar-header">
+                <div class="card-body text-white py-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h1 class="agregar-title mb-2">
+                                <i class="fas fa-cloud-upload-alt me-3"></i>Agregar Fotografías
+                            </h1>
+                            <div class="agregar-subtitle">
+                                <i class="fas fa-camera me-2"></i>
+                                Sube múltiples imágenes para enriquecer tu encuesta
+                            </div>
+                        </div>
+                        <a href="{% url 'detalle_encuesta' encuesta.id %}" class="btn btn-light btn-sm d-flex align-items-center shadow-sm">
+                            <i class="fas fa-arrow-left me-2"></i> Volver
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Información de la encuesta -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4 sidebar-card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-file-text me-2"></i>Información de la Encuesta
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Título:</label>
+                        <p class="form-control-plaintext">{{ encuesta.titulo }}</p>
+                    </div>
+                    
+                    {% if encuesta.descripcion %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Descripción:</label>
+                        <p class="form-control-plaintext">{{ encuesta.descripcion|truncatechars:150 }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Fecha de creación:</label>
+                        <p class="form-control-plaintext">
+                            <i class="fas fa-calendar me-1"></i>
+                            {{ encuesta.fecha_creacion|date:"d M Y, H:i" }}
+                        </p>
+                    </div>
+                    
+                    {% if encuesta.fecha_finalizacion %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Fecha de finalización:</label>
+                        <p class="form-control-plaintext">
+                            <i class="fas fa-calendar me-1"></i>
+                            {{ encuesta.fecha_finalizacion|date:"d M Y" }}
+                        </p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Fotografías actuales:</label>
+                        <p class="form-control-plaintext">
+                            <i class="fas fa-images me-1"></i>
+                            {{ encuesta.fotografias.count }} fotografía{{ encuesta.fotografias.count|pluralize }}
+                        </p>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <a href="{% url 'detalle_encuesta' encuesta.id %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-external-link-alt me-1"></i> Ver encuesta completa
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Fotografías existentes -->
+            {% if encuesta.fotografias.all %}
+            <div class="card shadow-sm existing-photos-card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-images me-2"></i>Fotografías Existentes
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for foto in encuesta.fotografias.all|slice:":6" %}
+                        <div class="col-6 mb-2">
+                            <div class="existing-photo">
+                                <img src="{{ foto.imagen.url }}" alt="Foto {{ forloop.counter }}">
+                                <div class="photo-number">{{ forloop.counter }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if encuesta.fotografias.count > 6 %}
+                    <div class="text-center mt-2">
+                        <small class="text-muted">
+                            <i class="fas fa-ellipsis-h me-1"></i>
+                            Y {{ encuesta.fotografias.count|add:"-6" }} más...
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Formulario de carga -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-upload me-2"></i>Agregar Nuevas Fotografías
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data" id="formAgregarFotos" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="fotos" class="form-label">
+                                <i class="fas fa-image me-2 text-primary"></i>Seleccionar Imágenes
+                            </label>
+                            <input type="file" class="form-control form-control-lg" id="fotos" name="fotos" accept="image/*" multiple required>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Puedes seleccionar múltiples imágenes a la vez. Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 10MB por imagen.
+                            </div>
+                        </div>
+                        
+                        <!-- Preview de imágenes seleccionadas -->
+                        <div id="previewContainer" class="mb-4" style="display: none;">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-eye me-2 text-success"></i>Vista previa de las imágenes seleccionadas:
+                            </label>
+                            <div id="previewImages" class="row"></div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            <strong>Consejo:</strong> Las imágenes se subirán automáticamente después de seleccionarlas. 
+                            Asegúrate de que las imágenes sean claras y relevantes para la encuesta.
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{% url 'detalle_encuesta' encuesta.id %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i> Volver a la encuesta
+                            </a>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-outline-warning btn-lg" onclick="resetForm()">
+                                    <i class="fas fa-undo me-2"></i> Limpiar selección
+                                </button>
+                                <button type="submit" class="btn btn-success btn-lg" id="btnSubir" disabled>
+                                    <i class="fas fa-upload me-2"></i> Subir fotografías
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Preview de imágenes seleccionadas
+document.getElementById('fotos').addEventListener('change', function(e) {
+    const files = e.target.files;
+    const previewContainer = document.getElementById('previewContainer');
+    const previewImages = document.getElementById('previewImages');
+    const btnSubir = document.getElementById('btnSubir');
+    
+    // Limpiar preview anterior
+    previewImages.innerHTML = '';
+    
+    if (files.length > 0) {
+        previewContainer.style.display = 'block';
+        previewContainer.style.animation = 'fadeInUp 0.6s ease-out';
+        btnSubir.disabled = false;
+        
+        Array.from(files).forEach((file, index) => {
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-4 col-sm-6 mb-3';
+                    col.innerHTML = `
+                        <div class="preview-image">
+                            <img src="${e.target.result}" alt="Preview ${index + 1}">
+                            <div class="preview-badge">${index + 1}</div>
+                            <div class="preview-size">${(file.size / 1024 / 1024).toFixed(2)} MB</div>
+                        </div>
+                    `;
+                    previewImages.appendChild(col);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    } else {
+        previewContainer.style.display = 'none';
+        btnSubir.disabled = true;
+    }
+});
+
+// Función para limpiar formulario
+function resetForm() {
+    document.getElementById('formAgregarFotos').reset();
+    document.getElementById('previewContainer').style.display = 'none';
+    document.getElementById('btnSubir').disabled = true;
+}
+
+// Mostrar toasts
+document.addEventListener('DOMContentLoaded', function() {
+    var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+    toastElList.forEach(function(toastEl) {
+        var toast = new bootstrap.Toast(toastEl);
+        toast.show();
+    });
+});
+</script>
+{% endblock %}

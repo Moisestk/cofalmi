@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block contenido %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/dataTables.min.css' %}">
+<div class="container mt-3">
+<div class="d-flex justify-content-between mb-3">
+    <h2>Reportes de Encuestas Realizadas</h2>
+</div>
+<div style="overflow-x:auto;">
+{% if respuestas %}
+<table id="tabla-reportes" class="table table-striped text-center align-middle">
+    <thead>
+        <tr>
+            <th style="width: 40px;">#</th>
+            <th>Encuesta</th>
+            <th>Encuestado</th>
+            <th>Fecha</th>
+            <th style="width: 120px;">Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for respuesta in respuestas %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td><strong>{{ respuesta.encuesta.titulo }}</strong></td>
+            <td>{{ respuesta.encuestado.nombre }} {{ respuesta.encuestado.apellido }}</td>
+            <td>{{ respuesta.fecha_creacion|date:"M d, Y H:i" }}</td>
+            <td style="width: 120px;">
+                <div class="d-flex justify-content-center flex-wrap gap-1">
+                    <a href="{% url 'detalle_respuesta' respuesta.id %}" class="btn btn-info btn-sm" title="Ver detalles">
+                        <i class="fa fa-ellipsis"></i>
+                    </a>
+                    {% if not respuesta.papelera %}
+                    <a href="#" class="btn btn-danger btn-sm" title="Enviar a papelera"
+                    data-bs-toggle="modal"
+                    data-bs-target="#papeleraModal"
+                    data-id="{{ respuesta.id }}"
+                    data-titulo="{{ respuesta.encuesta.titulo }}">
+                        <i class="fa fa-trash"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-info text-center mt-3">
+    No hay reportes registrados.
+</div>
+{% endif %}
+</div>
+
+<!-- Modal Enviar a Papelera Reporte -->
+<div class="modal fade" id="papeleraModal" tabindex="-1" aria-labelledby="papeleraModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form id="formPapeleraReporte" method="post">
+        {% csrf_token %}
+        <div class="modal-header bg-warning text-dark">
+          <h5 class="modal-title" id="papeleraModalLabel">
+            <i class="fa fa-trash me-2"></i> Enviar a papelera
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          ¿Seguro que deseas enviar el reporte de <strong id="modal-papelera-titulo"></strong> a la papelera?
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-warning">Enviar a papelera</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
+<script src="{% static 'js/dataTables.min.js' %}"></script>
+<script>
+$(document).ready(function() {
+    $('#tabla-reportes').DataTable({
+        "language": {
+            "url": "{% static 'js/es-ES.json' %}"
+        },
+        "info": false
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    var papeleraModal = document.getElementById('papeleraModal');
+    papeleraModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+        var id = button.getAttribute('data-id');
+        var titulo = button.getAttribute('data-titulo');
+        document.getElementById('modal-papelera-titulo').textContent = titulo;
+        var form = document.getElementById('formPapeleraReporte');
+        form.action = "{% url 'enviar_a_papelera' 0 %}".replace('0', id);
+    });
+});
+</script>
+{% endblock %}

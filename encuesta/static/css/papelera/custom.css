@@ -1,0 +1,20 @@
+.nombre-truncado {
+    display: inline-block;
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+    cursor: pointer;
+    transition: max-width 0.2s;
+}
+.nombre-expandido {
+    display: inline-block;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    white-space: normal;
+    text-overflow: initial;
+    vertical-align: bottom;
+    cursor: pointer;
+    transition: max-width 0.2s;
+}

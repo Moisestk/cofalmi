@@ -1,0 +1,86 @@
+.accion-icono {
+    display: flex;
+    align-items: center;
+    background: transparent;
+    border: none;
+    color: #333;
+    text-decoration: none;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.2s;
+    position: relative;
+    min-width: 36px;
+    max-width: 140px;
+    overflow: hidden;
+    font-size: 1.1rem;
+}
+
+.accion-icono .icono {
+    width: 28px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: color 0.2s;
+}
+
+.accion-icono .texto {
+    opacity: 0;
+    width: 0;
+    margin-left: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: opacity 0.2s, width 0.2s, margin-left 0.2s;
+    color: inherit;
+    font-size: 1rem;
+}
+
+.accion-icono:hover, .accion-icono:focus {
+    background: #f0f3f3;
+    text-decoration: none;
+}
+
+.accion-icono:hover .texto, .accion-icono:focus .texto {
+    opacity: 1;
+    width: 70px;
+    margin-left: 8px;
+}
+
+.accion-icono.btnEliminarPregunta .icono,
+.accion-icono.btnEliminarPregunta:hover .icono { color: #dc3545; }
+.accion-icono.btnEditarPregunta .icono,
+.accion-icono.btnEditarPregunta:hover .icono { color: #0d6efd; }
+.accion-icono.btnDetallesPregunta .icono,
+.accion-icono.btnDetallesPregunta:hover .icono { color: #0dcaf0; }
+
+.accion-icono.btnEliminarPregunta:hover { color: #dc3545; }
+.accion-icono.btnEditarPregunta:hover { color: #0d6efd; }
+.accion-icono.btnDetallesPregunta:hover { color: #0dcaf0; }
+
+body.modal-open #main-content {
+    filter: blur(5px) grayscale(10%);
+    transition: filter 0.2s;
+}
+.pointer-events-none {
+    pointer-events: none;
+}
+.preview-check {
+    filter: grayscale(0%) brightness(0.5)!important;
+}
+#modalPregunta .modal-content {
+    background-color: #f0f3f3!important;
+}
+
+body.modal-open #main-content {
+    filter: blur(5px) grayscale(10%);
+    transition: filter 0.2s;
+} 
+
+.modal-backdrop.show {
+    backdrop-filter: blur(5px);
+    background-color: rgba(30, 50, 80, 0.2);
+}
+
+.modal-backdrop.show {
+    background-color: rgba(30, 50, 80, 0.2);
+}
+

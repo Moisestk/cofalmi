@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="container mt-5">
+    <div class="alert alert-danger text-center">
+        <h4>¿Estás seguro que deseas eliminar definitivamente al encuestado?</h4>
+        <p><strong>{{ encuestado.nombre }} {{ encuestado.apellido }}</strong></p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+            <a href="{% url 'papelera' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+    /* Sidebar: color normal y azul solo en hover o activo para todas las opciones */
+    .sidebar-nav .nav-link {
+      color: #222 !important;
+      background: transparent !important;
+      transition: color 0.2s, background 0.2s;
+    }
+    .sidebar-nav .nav-link:hover,
+    .sidebar-nav .nav-link.active {
+      color: #0d6efd !important; /* azul bootstrap */
+      background: #f0f6ff !important;
+    }
+  

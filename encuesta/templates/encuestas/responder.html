@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% block contenido %}
+
+<div class="container-fluid mt-4">
+    <!-- Header de la encuesta -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body text-white py-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h1 class="mb-2 display-6 fw-bold">
+                                <i class="fas fa-poll me-3"></i>
+                                {{ encuesta.titulo }}
+                            </h1>
+                            <p class="lead mb-0 opacity-75">Responde las siguientes preguntas</p>
+                        </div>
+                        <a href="{% url 'listar_encuestas' %}" class="btn btn-light btn-sm d-flex align-items-center shadow-sm">
+                            <i class="fas fa-arrow-left me-2"></i> Volver
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de la encuesta -->
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <form method="post" id="encuestaForm" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <!-- Preguntas -->
+                {% for pregunta in preguntas %}
+                <div class="card mb-4 border-0 shadow-sm pregunta-card" data-pregunta="{{ forloop.counter }}">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="pregunta-numero me-3">
+                                <span class="badge bg-primary rounded-pill fs-6 px-3 py-2">{{ forloop.counter }}</span>
+                            </div>
+                            <div class="pregunta-contenido flex-grow-1">
+                                <h5 class="fw-bold text-dark mb-3 pregunta-texto">
+                                    {{ pregunta.texto_pregunta }}
+                                </h5>
+                                
+                                <!-- Opciones de respuesta -->
+                                <div class="opciones-container">
+                                    {% for respuesta in pregunta.respuestas.all %}
+                                        <div class="form-check mb-3 p-3 border rounded-3 opcion-item">
+                                            <input class="form-check-input" 
+                                                   type="radio" 
+                                                   name="pregunta_{{ pregunta.id_pregunta }}" 
+                                                   id="respuesta_{{ respuesta.id_respuesta }}" 
+                                                   value="{{ respuesta.id_respuesta }}"
+                                                   onchange="updateProgress()">
+                                            <label class="form-check-label w-100" for="respuesta_{{ respuesta.id_respuesta }}">
+                                                <span class="fw-semibold">{{ respuesta.texto_respuesta }}</span>
+                                            </label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Botones de acción -->
+                <div class="card border-0 shadow-lg mt-4">
+                    <div class="card-body p-4 text-center">
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                            <button type="submit" class="btn btn-success btn-lg px-5 py-3 shadow-sm" id="btnEnviar">
+                                <i class="fas fa-paper-plane me-2"></i> 
+                                <span class="btn-text">Enviar Respuestas</span>
+                                <span class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                            </button>
+                            <a href="{% url 'listar_encuestas' %}" class="btn btn-outline-secondary btn-lg px-5 py-3">
+                                <i class="fas fa-times me-2"></i> Cancelar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Inicializar progreso
+    updateProgress();
+
+    // Efectos de hover en las opciones
+    const opcionItems = document.querySelectorAll('.opcion-item');
+    opcionItems.forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = '#f8f9fa';
+            this.style.borderColor = '#0d6efd';
+            this.style.transform = 'translateX(5px)';
+            this.style.transition = 'all 0.3s ease';
+        });
+        
+        item.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+            this.style.borderColor = '';
+            this.style.transform = 'translateX(0)';
+        });
+    });
+
+    // Efectos en las tarjetas de preguntas
+    const preguntaCards = document.querySelectorAll('.pregunta-card');
+    preguntaCards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+    });
+
+    // Animación del botón al enviar
+    const form = document.getElementById('encuestaForm');
+    form.addEventListener('submit', function(e) {
+        const btnText = document.querySelector('#btnEnviar .btn-text');
+        const spinner = document.querySelector('#btnEnviar .spinner-border');
+        btnText.textContent = 'Enviando...';
+        spinner.classList.remove('d-none');
+    });
+});
+
+function updateProgress() {
+    const totalPreguntas = document.querySelectorAll('.pregunta-card').length;
+    let preguntasRespondidas = 0;
+    
+    document.querySelectorAll('.pregunta-card').forEach(card => {
+        const inputs = card.querySelectorAll('input[type="radio"]');
+        let tieneRespuesta = false;
+        
+        inputs.forEach(input => {
+            if (input.checked) {
+                tieneRespuesta = true;
+            }
+        });
+        
+        if (tieneRespuesta) {
+            preguntasRespondidas++;
+            card.classList.add('pregunta-respondida');
+        } else {
+            card.classList.remove('pregunta-respondida');
+        }
+    });
+    
+    // Actualizar estado del botón
+    const btnEnviar = document.getElementById('btnEnviar');
+    if (preguntasRespondidas === totalPreguntas) {
+        btnEnviar.classList.remove('btn-secondary');
+        btnEnviar.classList.add('btn-success');
+        btnEnviar.disabled = false;
+    } else {
+        btnEnviar.classList.remove('btn-success');
+        btnEnviar.classList.add('btn-secondary');
+        btnEnviar.disabled = true;
+    }
+}
+</script>
+
+<style>
+/* Animaciones personalizadas */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.pregunta-card {
+    animation: fadeInUp 0.6s ease-out;
+    transition: all 0.3s ease;
+}
+
+.pregunta-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+.pregunta-respondida {
+    border-left: 4px solid #28a745 !important;
+    background-color: #f8fff9 !important;
+}
+
+.opcion-item {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.opcion-item:hover {
+    background-color: #f8f9fa;
+    border-color: #0d6efd;
+}
+
+.opcion-item input[type="radio"]:checked + label {
+    color: #0d6efd;
+    font-weight: bold;
+}
+
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .pregunta-card .d-flex {
+        flex-direction: column;
+    }
+    
+    .pregunta-numero {
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}

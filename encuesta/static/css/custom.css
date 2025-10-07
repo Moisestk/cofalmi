@@ -1,0 +1,49 @@
+.btn-eliminar {
+  margin-top: 24px;
+}
+
+th,
+td {
+  text-align: center !important;
+}
+.space-between {
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+.show-pass {
+  position: absolute;
+  right: 9px;
+  top: 25px;
+  cursor: pointer;
+}
+
+.show-pass-login {
+  position: absolute;
+  right: 9px;
+  top: 35px;
+  cursor: pointer;
+}
+
+.errorlist {
+  list-style: none;
+  color: firebrick;
+}
+.show-pass {
+  cursor: pointer;
+}
+.show-pass .fa-eye {
+  display: none;
+}
+.show-pass.active .fa-eye-slash {
+  display: none;
+}
+.show-pass.active .fa-eye {
+  display: inline-block;
+}
+
+.logo img {
+  max-height: 200px !important;
+}
+.container-table{
+  overflow-x: auto;
+}

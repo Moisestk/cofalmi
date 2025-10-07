@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% load form_tags %}
+{% block contenido %}
+<link rel="stylesheet" href="{% static 'css/encuestados/crear-editar.css' %}">
+<div class="container mt-4">
+    <div class="d-flex justify-content-between mb-3">
+        <h2>Crear Encuestado</h2>
+        <a href="{% url 'listar_encuestados' %}" class="btn btn-outline-secondary btn-sm d-flex align-items-center">
+            <i class="fa fa-arrow-left me-1"></i> Volver a la lista
+        </a>
+    </div>
+    <div class="card">
+        <div class="card-body mt-4">
+            <form method="POST" class="row g-3" autocomplete="off" novalidate>
+                {% csrf_token %}
+                <div class="col-md-6">
+                    <label for="id_nombre" class="form-label">Nombre:</label>
+                    <input type="text" name="nombre" id="id_nombre" class="form-control{% if form.nombre.errors %} is-invalid{% endif %}"
+                        pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,}" minlength="3" maxlength="100" required
+                        placeholder="Ej: Juan Carlos"
+                        title="Solo letras y espacios, mínimo 3 caracteres"
+                        value="{{ form.nombre.value|default_if_none:'' }}">
+                    {% for error in form.nombre.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_apellido" class="form-label">Apellido:</label>
+                    <input type="text" name="apellido" id="id_apellido" class="form-control{% if form.apellido.errors %} is-invalid{% endif %}"
+                        pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,}" minlength="3" maxlength="100" required
+                        placeholder="Ej: Pérez Gómez"
+                        title="Solo letras y espacios, mínimo 3 caracteres"
+                        value="{{ form.apellido.value|default_if_none:'' }}">
+                    {% for error in form.apellido.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Cédula:</label>
+                    <div class="input-group">
+                        <select name="tipo_cedula" id="id_tipo_cedula" class="form-select tipo-cedula-mini" required>
+                            <option value="V" {% if form.tipo_cedula.value == "V" %}selected{% endif %}>V</option>
+                            <option value="E" {% if form.tipo_cedula.value == "E" %}selected{% endif %}>E</option>
+                        </select>
+                        <input type="text" name="cedula_numero" id="id_cedula_numero"
+                            class="form-control{% if form.cedula_numero.errors %} is-invalid{% endif %}"
+                            pattern="\d{6,}" minlength="6" maxlength="9" required
+                            placeholder="Ej: 12345678"
+                            title="Solo números, mínimo 6 dígitos"
+                            value="{{ form.cedula_numero.value|default_if_none:'' }}"
+                            inputmode="numeric"
+                            oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+                    </div>
+                    {% for error in form.tipo_cedula.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                    {% for error in form.cedula_numero.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_genero" class="form-label">Género:</label>
+                    {{ form.genero|add_class:"form-control" }}
+                    {% for error in form.genero.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+<div class="col-md-6">
+    <label for="id_telefono_numero" class="form-label">Teléfono:</label>
+    <div class="input-group">
+        <select name="telefono_prefijo" id="id_telefono_prefijo" class="form-select" required style="max-width: 90px;">
+            <option value="0412" {% if form.telefono_prefijo.value == "0412" %}selected{% endif %}>0412</option>
+            <option value="0414" {% if form.telefono_prefijo.value == "0414" %}selected{% endif %}>0414</option>
+            <option value="0416" {% if form.telefono_prefijo.value == "0416" %}selected{% endif %}>0416</option>
+            <option value="0424" {% if form.telefono_prefijo.value == "0424" %}selected{% endif %}>0424</option>
+            <option value="0426" {% if form.telefono_prefijo.value == "0426" %}selected{% endif %}>0426</option>
+            <option value="0422" {% if form.telefono_prefijo.value == "0422" %}selected{% endif %}>0422</option>
+        </select>
+        <input type="text" name="telefono_numero" id="id_telefono_numero"
+            class="form-control{% if form.telefono_numero.errors %} is-invalid{% endif %}"
+            pattern="\d{7}" minlength="7" maxlength="7" required
+            placeholder="1234567"
+            title="Ingrese los 7 dígitos restantes"
+            value="{{ form.telefono_numero.value|default_if_none:'' }}"
+            inputmode="numeric"
+            oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+    </div>
+    {% for error in form.telefono_prefijo.errors %}
+        <div class="invalid-feedback d-block">{{ error }}</div>
+    {% endfor %}
+    {% for error in form.telefono_numero.errors %}
+        <div class="invalid-feedback d-block">{{ error }}</div>
+    {% endfor %}
+</div>
+                <div class="col-md-6">
+                    <label for="id_direccion" class="form-label">Dirección:</label>
+                    <textarea name="direccion" id="id_direccion" class="form-control{% if form.direccion.errors %} is-invalid{% endif %}" rows="2" required
+                        minlength="3" maxlength="255"
+                        placeholder="Ej: Av. Bolívar, Edif. Central, Piso 2"
+                        title="La dirección no puede estar en blanco">{{ form.direccion.value|default_if_none:'' }}</textarea>
+                    {% for error in form.direccion.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_cargo" class="form-label">Cargo:</label>
+                    <input type="text" name="cargo" id="id_cargo" class="form-control{% if form.cargo.errors %} is-invalid{% endif %}"
+                        minlength="2" maxlength="100" required
+                        placeholder="Ej: Analista"
+                        title="Ingrese el cargo"
+                        value="{{ form.cargo.value|default_if_none:'' }}">
+                    {% for error in form.cargo.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_ubicacion_administrativa" class="form-label">Ubicación Administrativa:</label>
+                    <input type="text" name="ubicacion_administrativa" id="id_ubicacion_administrativa" class="form-control{% if form.ubicacion_administrativa.errors %} is-invalid{% endif %}"
+                        minlength="2" maxlength="100" required
+                        placeholder="Ej: Gerencia de Recursos Humanos"
+                        title="Ingrese la ubicación administrativa"
+                        value="{{ form.ubicacion_administrativa.value|default_if_none:'' }}">
+                    {% for error in form.ubicacion_administrativa.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-12 d-flex justify-content-center gap-2 mt-3">
+                    <button type="submit" class="btn btn-primary btn-sm d-flex align-items-center">
+                        <i class="fa fa-save me-1"></i> Guardar
+                    </button>
+                    <a href="{% url 'listar_encuestados' %}" class="btn btn-secondary btn-sm d-flex align-items-center">
+                        <i class="fa fa-times me-1"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

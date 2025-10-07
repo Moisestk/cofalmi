@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="container-fluid mt-4">
+    <!-- Header con gradiente -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, #0a58ca);">
+                <div class="card-body text-white text-center py-5">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h1 class="mb-0 display-6 fw-bold">
+                            <i class="fas fa-clipboard-list me-3"></i>
+                            Realizar Encuesta
+                        </h1>
+                        <a href="{% url 'inicio' %}" class="btn btn-light btn-sm d-flex align-items-center shadow-sm">
+                            <i class="fas fa-arrow-left me-2"></i> Volver al inicio
+                        </a>
+                    </div>
+                    <p class="lead mb-0 opacity-75">Selecciona el encuestado y la encuesta que deseas realizar</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de selección -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body p-5">
+                    <form method="post" id="seleccionForm" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <div class="row g-4">
+                            <!-- Selección de Encuestado -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select name="encuestado" id="encuestado" class="form-select form-select-lg" required>
+                                        <option value="" disabled selected>Seleccione un encuestado</option>
+                                        {% for e in encuestados %}
+                                            <option value="{{ e.id }}">{{ e.nombre }} {{ e.apellido }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label for="encuestado" class="fw-semibold">
+                                        <i class="fas fa-user me-2 text-primary"></i>Encuestado
+                                    </label>
+                                </div>
+                                <div class="invalid-feedback">
+                                    Por favor selecciona un encuestado.
+                                </div>
+                            </div>
+
+                            <!-- Selección de Encuesta -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select name="encuesta" id="encuesta" class="form-select form-select-lg" required>
+                                        <option value="" disabled selected>Seleccione una encuesta</option>
+                                        {% for e in encuestas %}
+                                            <option value="{{ e.id }}">{{ e.titulo }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label for="encuesta" class="fw-semibold">
+                                        <i class="fas fa-poll me-2 text-success"></i>Encuesta
+                                    </label>
+                                </div>
+                                <div class="invalid-feedback">
+                                    Por favor selecciona una encuesta.
+                                </div>
+                                {% if not encuestas %}
+                                <div class="alert alert-info mt-2 d-flex align-items-center">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <small>No hay encuestas disponibles con preguntas asignadas.</small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="row mt-5">
+                            <div class="col-12 text-center">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                                    <button type="submit" 
+                                            class="btn btn-primary btn-lg px-5 py-3 shadow-sm" 
+                                            id="btnComenzar"
+                                            {% if not encuestas %}disabled{% endif %}>
+                                        <i class="fas fa-play me-2"></i> 
+                                        <span class="btn-text">
+                                            {% if encuestas %}Comenzar Encuesta{% else %}No hay encuestas disponibles{% endif %}
+                                        </span>
+                                        <span class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                                    </button>
+                                    <a href="{% url 'inicio' %}" class="btn btn-outline-secondary btn-lg px-5 py-3">
+                                        <i class="fas fa-times me-2"></i> Cancelar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información adicional -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 bg-light">
+                <div class="card-body text-center py-4">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center justify-content-center mb-2">
+                                <i class="fas fa-users text-primary me-2 fs-4"></i>
+                                <span class="fw-semibold">{{ encuestados|length }} Encuestados</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center justify-content-center mb-2">
+                                <i class="fas fa-poll text-success me-2 fs-4"></i>
+                                <span class="fw-semibold">{{ encuestas|length }} Encuestas</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center justify-content-center mb-2">
+                                <i class="fas fa-shield-alt text-warning me-2 fs-4"></i>
+                                <span class="fw-semibold">Datos Seguros</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de advertencia mejorado -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-danger text-white border-0">
+        <h5 class="modal-title d-flex align-items-center" id="errorModalLabel">
+          <i class="fas fa-exclamation-triangle me-3 fs-4"></i> 
+          <span>No se puede realizar la encuesta</span>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body text-center py-4">
+        <div class="mb-3" id="errorIcon">
+          <i class="fas fa-user-times text-danger" style="font-size: 3rem;"></i>
+        </div>
+        <h6 class="fw-bold text-dark mb-3" id="errorTitle">Error en la selección</h6>
+        <p class="text-muted mb-0" id="errorMessage">
+          No se puede realizar la misma encuesta más de una vez a la misma persona.
+        </p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center">
+        <button type="button" class="btn btn-primary px-4" data-bs-dismiss="modal">
+          <i class="fas fa-check me-2"></i>Entendido
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts mejorados -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Validación del formulario
+    const form = document.getElementById('seleccionForm');
+    const btnComenzar = document.getElementById('btnComenzar');
+    const btnText = btnComenzar.querySelector('.btn-text');
+    const spinner = btnComenzar.querySelector('.spinner-border');
+
+    // Validación en tiempo real
+    const encuestadoSelect = document.getElementById('encuestado');
+    const encuestaSelect = document.getElementById('encuesta');
+
+    function validateForm() {
+        const isValid = encuestadoSelect.value && encuestaSelect.value;
+        btnComenzar.disabled = !isValid;
+        
+        if (isValid) {
+            btnComenzar.classList.remove('btn-secondary');
+            btnComenzar.classList.add('btn-primary');
+        } else {
+            btnComenzar.classList.remove('btn-primary');
+            btnComenzar.classList.add('btn-secondary');
+        }
+    }
+
+    encuestadoSelect.addEventListener('change', validateForm);
+    encuestaSelect.addEventListener('change', validateForm);
+
+    // Animación del botón al enviar
+    form.addEventListener('submit', function(e) {
+        btnText.textContent = 'Procesando...';
+        spinner.classList.remove('d-none');
+        btnComenzar.disabled = true;
+    });
+
+    // Mostrar modal de error si existe
+    {% if error %}
+    setTimeout(function() {
+        var errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+        var errorIcon = document.getElementById('errorIcon');
+        var errorTitle = document.getElementById('errorTitle');
+        var errorMessage = document.getElementById('errorMessage');
+        
+        // Personalizar el modal según el tipo de error
+        var errorText = "{{ error }}";
+        
+        if (errorText.includes("ya respondió")) {
+            errorIcon.innerHTML = '<i class="fas fa-user-times text-warning" style="font-size: 3rem;"></i>';
+            errorTitle.textContent = "Encuesta ya realizada";
+            errorMessage.textContent = errorText;
+        } else if (errorText.includes("no tiene preguntas")) {
+            errorIcon.innerHTML = '<i class="fas fa-question-circle text-info" style="font-size: 3rem;"></i>';
+            errorTitle.textContent = "Encuesta sin preguntas";
+            errorMessage.textContent = errorText;
+        } else if (errorText.includes("ya ha finalizado")) {
+            errorIcon.innerHTML = '<i class="fas fa-calendar-times text-danger" style="font-size: 3rem;"></i>';
+            errorTitle.textContent = "Encuesta finalizada";
+            errorMessage.textContent = errorText;
+        } else if (errorText.includes("no está activa")) {
+            errorIcon.innerHTML = '<i class="fas fa-ban text-secondary" style="font-size: 3rem;"></i>';
+            errorTitle.textContent = "Encuesta inactiva";
+            errorMessage.textContent = errorText;
+        } else if (errorText.includes("no existe")) {
+            errorIcon.innerHTML = '<i class="fas fa-exclamation-circle text-danger" style="font-size: 3rem;"></i>';
+            errorTitle.textContent = "Encuesta no encontrada";
+            errorMessage.textContent = errorText;
+        } else {
+            errorIcon.innerHTML = '<i class="fas fa-exclamation-triangle text-danger" style="font-size: 3rem;"></i>';
+            errorTitle.textContent = "Error en la selección";
+            errorMessage.textContent = errorText;
+        }
+        
+        errorModal.show();
+    }, 500);
+    {% endif %}
+
+    // Efectos de hover en las tarjetas
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.transition = 'transform 0.3s ease';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+</script>
+
+<style>
+/* Animaciones personalizadas */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.form-floating > .form-select {
+    padding-top: 1.625rem;
+    padding-bottom: 0.625rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.form-floating > label {
+    opacity: 0.65;
+    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+}
+
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Gradiente personalizado para el header */
+.gradient-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+</style>
+{% endblock %}

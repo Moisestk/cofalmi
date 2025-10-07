@@ -1,0 +1,708 @@
+{% extends "base.html" %}
+{% load static %}
+{% block user %} <a class="nav-link"> {% endblock %}
+{% block navegacion %}
+    <li class="breadcrumb-item"><a href="perfil1">Perfil</a></li>
+    <li class="breadcrumb-item active">vista</li>
+{% endblock %} 
+
+{% block contenido %}
+
+{% if messages %}
+<div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index: 1080; right: 0; top: 0;">
+  {% for message in messages %}
+  <div class="toast align-items-center text-bg-success border-0 {% if message.tags == 'error' %}text-bg-danger{% endif %}" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3500">
+    <div class="d-flex">
+      <div class="toast-body">
+        {{ message }}
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<body>
+    <section class="section profile">
+      <div class="row">
+        <div class="col-xl-4">
+          <div class="card">
+            <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
+              <img src="../templates/../inventario/../media/image1.png" alt="Profile" class="rounded-circle">
+              <h2>{{user.first_name}} {{ user.last_name}}</h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-8">
+          <div class="card">
+            <div class="card-body pt-3">
+             <!-- Pestañas con borde -->
+              <ul class="nav nav-tabs nav-tabs-bordered">
+                <li class="nav-item">
+                  <button class="nav-link {% if active_tab == 'profile-overview' %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#profile-overview">Resumen</button>
+                </li>
+                <li class="nav-item">
+                  <button class="nav-link {% if active_tab == 'profile-edit' %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#profile-edit">Editar perfil</button>
+                </li>
+                <li class="nav-item">
+                  <button class="nav-link {% if active_tab == 'profile-change-password' %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#profile-change-password">Cambiar contraseña</button>
+                </li>
+              </ul>
+              
+              <div class="tab-content pt-2">
+                <div class="tab-pane fade {% if active_tab == 'profile-overview' %}show active{% endif %} profile-overview" id="profile-overview">
+                  <h5 class="card-title">Detalles de perfil</h5>
+                  <!-- Detalles de perfil -->
+                  <div class="row">
+                    <div class="col-lg-3 col-md-4 label">Nombre</div>
+                    <div class="col-lg-9 col-md-8">{{ user.first_name}}</div>
+                  </div>
+                  <div class="row">
+                    <div class="col-lg-3 col-md-4 label">Apellido</div>
+                    <div class="col-lg-9 col-md-8">{{ user.last_name}}</div>
+                  </div>
+                  <div class="row">
+                    <div class="col-lg-3 col-md-4 label">Usuario</div>
+                    <div class="col-lg-9 col-md-8">{{ user.username}}</div>
+                  </div>
+                  <div class="row">
+                    <div class="col-lg-3 col-md-4 label">Email</div>
+                    <div class="col-lg-9 col-md-8">{{ user.email}}</div>
+                  </div>
+                </div>
+
+                <div class="tab-pane fade profile-edit pt-3 {% if active_tab == 'profile-edit' %}show active{% endif %}" id="profile-edit">
+                 <!-- Formulario de edición de perfil -->
+                 <form method="POST" enctype="multipart/form-data" class="row g-3">
+                  {% csrf_token %}
+                    <div class="row mb-3">
+                      <label for="first_name" class="col-md-4 col-lg-3 col-form-label">Nombre</label>
+                      <div class="col-md-8 col-lg-9">
+                        <input name="first_name" type="text" class="form-control" id="first_name" value="{{ perfil_form.first_name.value }}">
+                        {% if perfil_form.first_name.errors %}
+                          <div class="text-danger mt-1">
+                            {% for error in perfil_form.first_name.errors %}
+                              {{ error }}
+                            {% endfor %}
+                          </div>
+                        {% endif %}
+                      </div>
+                    </div>
+                    <div class="row mb-3">
+                      <label for="last_name" class="col-md-4 col-lg-3 col-form-label">Apellido</label>
+                      <div class="col-md-8 col-lg-9">
+                        <input name="last_name" type="text" class="form-control" id="last_name" value="{{ perfil_form.last_name.value }}">
+                        {% if perfil_form.last_name.errors %}
+                          <div class="text-danger mt-1">
+                            {% for error in perfil_form.last_name.errors %}
+                              {{ error }}
+                            {% endfor %}
+                          </div>
+                        {% endif %}
+                      </div>
+                    </div>
+                    <div class="row mb-3">
+                      <label for="username" class="col-md-4 col-lg-3 col-form-label">Nombre de usuario</label>
+                      <div class="col-md-8 col-lg-9">
+                        <input name="username" type="text" class="form-control" id="username" value="{{ perfil_form.username.value }}">
+                        {% if perfil_form.username.errors %}
+                          <div class="text-danger mt-1">
+                            {% for error in perfil_form.username.errors %}
+                              {{ error }}
+                            {% endfor %}
+                          </div>
+                        {% endif %}
+                      </div>
+                    </div>
+                    <div class="row mb-3">
+                      <label for="email" class="col-md-4 col-lg-3 col-form-label">Email</label>
+                      <div class="col-md-8 col-lg-9">
+                        <input name="email" type="email" class="form-control" id="email" value="{{ perfil_form.email.value }}">
+                        {% if perfil_form.email.errors %}
+                          <div class="text-danger mt-1">
+                            {% for error in perfil_form.email.errors %}
+                              {{ error }}
+                            {% endfor %}
+                          </div>
+                        {% endif %}
+                      </div>
+                    </div>
+                    <div class="text-center">
+                      <button type="submit" name="editar_perfil" class="btn btn-primary">Guardar cambios</button>
+                    </div>
+                  </form><!-- End Profile Edit Form -->
+                </div>
+
+                <div class="tab-pane fade pt-3 {% if active_tab == 'profile-change-password' %}show active{% endif %}" id="profile-change-password">
+                  <!-- Formulario de cambio de contraseña -->
+                  <form method="POST" action="{% url 'perfil1' %}" class="row g-3">
+                    {% csrf_token %}
+                      <div class="row mb-3 align-items-center">
+                        <label for="{{ password_form.old_password.id_for_label }}" class="col-md-4 col-lg-3 col-form-label">{{ password_form.old_password.label }}</label>
+                        <div class="col-md-8 col-lg-9">
+                          <div class="input-group">
+                            {{ password_form.old_password }}
+                            <button type="button" class="btn show-password-toggle">
+                              <i class="fas fa-eye-slash"></i>
+                            </button>
+                          </div>
+                          {% if password_form.old_password.errors %}
+                            <div class="text-danger mt-1">
+                              {% for error in password_form.old_password.errors %}
+                                {{ error }}
+                              {% endfor %}
+                            </div>
+                          {% endif %}
+                        </div>
+                      </div>
+                      
+                      <div class="row mb-3 align-items-center">
+                        <label for="{{ password_form.new_password1.id_for_label }}" class="col-md-4 col-lg-3 col-form-label">{{ password_form.new_password1.label }}</label>
+                        <div class="col-md-8 col-lg-9">
+                          <div class="input-group">
+                            {{ password_form.new_password1 }}
+                            <button type="button" class="btn show-password-toggle">
+                              <i class="fas fa-eye-slash"></i>
+                            </button>
+                          </div>
+                          <div id="password-strength" class="form-text mt-1"></div>
+                          {% if password_form.new_password1.errors %}
+                            <div class="text-danger mt-1">
+                              {% for error in password_form.new_password1.errors %}
+                                {{ error }}
+                              {% endfor %}
+                            </div>
+                          {% endif %}
+                        </div>
+                      </div>
+                      
+                      <div class="row mb-3 align-items-center">
+                        <label for="{{ password_form.new_password2.id_for_label }}" class="col-md-4 col-lg-3 col-form-label">{{ password_form.new_password2.label }}</label>
+                        <div class="col-md-8 col-lg-9">
+                          <div class="input-group">
+                            {{ password_form.new_password2 }}
+                            <button type="button" class="btn show-password-toggle">
+                              <i class="fas fa-eye-slash"></i>
+                            </button>
+                          </div>
+                          <div id="password-match" class="form-text mt-1"></div>
+                          {% if password_form.new_password2.errors %}
+                            <div class="text-danger mt-1">
+                              {% for error in password_form.new_password2.errors %}
+                                {{ error }}
+                              {% endfor %}
+                            </div>
+                          {% endif %}
+                        </div>
+                      </div>
+
+                      <!-- Mostrar errores generales del formulario -->
+                      {% if password_form.non_field_errors %}
+                        <div class="row mb-3">
+                          <div class="col-12">
+                            <div class="alert alert-danger">
+                              {% for error in password_form.non_field_errors %}
+                                {{ error }}
+                              {% endfor %}
+                            </div>
+                          </div>
+                        </div>
+                      {% endif %}
+
+                    <div class="text-center">
+                      <button type="submit" name="cambiar_contraseña" class="btn btn-primary">Cambiar la contraseña</button>
+                      <!-- Botón de debug temporal -->
+                      <button type="button" onclick="debugPasswordToggles()" class="btn btn-secondary btn-sm ms-2">Debug Toggles</button>
+                    </div>
+                  </form><!-- End Change Password Form -->
+                </div>
+              </div><!-- End Bordered Tabs -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main><!-- End #main -->
+
+  <!-- Incluir CSS -->
+  <link rel="stylesheet" href="{% static 'css/password-toggle.css' %}">
+
+  <!-- Incluir JavaScript simplificado -->
+  <script src="{% static 'js/password-toggle-simple.js' %}"></script>
+
+<style>
+/* Estilos mejorados para el perfil manteniendo la estructura original */
+.section.profile {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    min-height: 100vh;
+    padding: 2rem 0;
+}
+
+/* Tarjeta del avatar (lado izquierdo) */
+.section.profile .card:first-child {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    overflow: hidden;
+    position: relative;
+}
+
+.section.profile .card:first-child::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+}
+
+.profile-card {
+    position: relative;
+    z-index: 2;
+    color: white;
+    text-align: center;
+    padding: 3rem 2rem !important;
+}
+
+.profile-card img {
+    width: 120px;
+    height: 120px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    margin-bottom: 1.5rem;
+}
+
+.profile-card img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+}
+
+.profile-card h2 {
+    color: white;
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Tarjeta principal (lado derecho) */
+.section.profile .card:last-child {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    background: white;
+    overflow: hidden;
+}
+
+/* Navegación de pestañas mejorada */
+.nav-tabs-bordered {
+    border-bottom: 2px solid #f8f9fa;
+    background: #f8f9fa;
+    margin: 0;
+    padding: 0.5rem;
+}
+
+.nav-tabs-bordered .nav-item {
+    margin: 0;
+}
+
+.nav-tabs-bordered .nav-link {
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin: 0 0.25rem;
+    color: #6c757d;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    background: transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-tabs-bordered .nav-link:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    transform: translateY(-2px);
+}
+
+.nav-tabs-bordered .nav-link.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    transform: translateY(-2px);
+}
+
+.nav-tabs-bordered .nav-link.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+}
+
+/* Contenido de las pestañas */
+.tab-content {
+    padding: 2rem;
+}
+
+.card-title {
+    color: #2c3e50;
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    position: relative;
+    padding-left: 1rem;
+}
+
+.card-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 2px;
+}
+
+/* Detalles del perfil mejorados */
+.profile-overview .row {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border-left: 4px solid #667eea;
+    transition: all 0.3s ease;
+}
+
+.profile-overview .row:hover {
+    background: #e9ecef;
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.profile-overview .label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.profile-overview .label::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: #667eea;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.profile-overview .col-lg-9,
+.profile-overview .col-md-8 {
+    color: #2c3e50;
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+/* Formularios mejorados */
+.form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+    font-size: 1rem;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: white;
+    transform: translateY(-2px);
+}
+
+.col-form-label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.col-form-label::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: #667eea;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Botones mejorados */
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 25px;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:hover::before {
+    left: 100%;
+}
+
+/* Input groups para contraseñas */
+.input-group {
+    position: relative;
+}
+
+.show-password-toggle {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-left: none;
+    border-radius: 0 12px 12px 0;
+    color: #6c757d;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+}
+
+.show-password-toggle:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+    transform: scale(1.05);
+}
+
+.show-password-toggle:active {
+    transform: scale(0.95);
+}
+
+.show-password-toggle i {
+    font-size: 1rem;
+    pointer-events: none;
+}
+
+.input-group .form-control {
+    border-radius: 12px 0 0 12px;
+}
+
+/* Mensajes de error mejorados */
+.text-danger {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.text-danger::before {
+    content: '⚠';
+    font-weight: bold;
+}
+
+/* Texto de ayuda para contraseñas */
+.form-text {
+    font-size: 0.875rem;
+    color: #6c757d;
+    background: #f8f9fa;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #17a2b8;
+    margin-top: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .section.profile .col-xl-4 {
+        margin-bottom: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .section.profile {
+        padding: 1rem 0;
+    }
+    
+    .profile-card {
+        padding: 2rem 1rem !important;
+    }
+    
+    .profile-card img {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .nav-tabs-bordered .nav-link {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .tab-content {
+        padding: 1.5rem;
+    }
+    
+    .profile-overview .row {
+        padding: 0.75rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .nav-tabs-bordered {
+        flex-direction: column;
+    }
+    
+    .nav-tabs-bordered .nav-link {
+        margin: 0.25rem 0;
+        text-align: center;
+    }
+    
+    .profile-card img {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .tab-content {
+        padding: 1rem;
+    }
+}
+
+/* Animaciones */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.tab-pane {
+    animation: fadeInUp 0.3s ease;
+}
+
+/* Efectos de hover para tarjetas */
+.section.profile .card {
+    transition: all 0.3s ease;
+}
+
+.section.profile .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+</style>
+</body>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+  toastElList.forEach(function(toastEl) {
+    var toast = new bootstrap.Toast(toastEl);
+    toast.show();
+  });
+
+  // JavaScript simplificado - funcionalidades adicionales
+  
+  // Los toggles de contraseña se manejan en password-toggle-simple.js
+  console.log('✅ Funcionalidades adicionales del perfil cargadas');
+
+
+  // Validación de contraseñas simplificada
+  function updatePasswordMatch() {
+    const password1 = document.getElementById('new_password1');
+    const password2 = document.getElementById('new_password2');
+    const matchDiv = document.getElementById('password-match');
+    
+    if (!password1 || !password2 || !matchDiv) return;
+    
+    const match = password1.value === password2.value;
+    const hasPassword2 = password2.value.length > 0;
+    
+    if (!hasPassword2) {
+      matchDiv.textContent = '';
+      return;
+    }
+    
+    if (match) {
+      matchDiv.textContent = '✅ Las contraseñas coinciden';
+      matchDiv.style.color = 'green';
+    } else {
+      matchDiv.textContent = '❌ Las contraseñas no coinciden';
+      matchDiv.style.color = 'red';
+    }
+  }
+
+  // Inicialización simplificada
+  function initializeProfile() {
+    console.log('🎯 Inicializando perfil...');
+    
+    // Solo configurar validación de contraseñas
+    const password1 = document.getElementById('new_password1');
+    const password2 = document.getElementById('new_password2');
+    
+    if (password1 && password2) {
+      password1.addEventListener('input', updatePasswordMatch);
+      password2.addEventListener('input', updatePasswordMatch);
+      console.log('✅ Validación de contraseñas configurada');
+    }
+    
+    console.log('🎉 Perfil inicializado');
+  }
+
+
+
+  // Event listeners
+  document.addEventListener('DOMContentLoaded', initializeProfile);
+
+  console.log('✅ Sistema de perfil simplificado cargado');
+});
+</script>
+{% endblock %}

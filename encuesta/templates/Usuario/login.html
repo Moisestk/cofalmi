@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+{% load static %}
+{% load widget_tweaks %}
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>Corfalmi</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <link href="{% static 'img/apple-touch-icon.png' %}" rel="apple-touch-icon">
+  <!-- Google Fonts -->
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+  <!-- Vendor CSS Files -->
+  <link href="{% static 'css/all.min.css' %}" rel="stylesheet">
+  <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'vendor/boxicons/css/boxicons.min.css' %}" rel="stylesheet">
+  <link href="{% static 'vendor/quill/quill.snow.css' %}" rel="stylesheet">
+  <link href="{% static 'vendor/quill/quill.bubble.css' %}" rel="stylesheet">
+  <link href="{% static 'vendor/remixicon/remixicon.css' %}" rel="stylesheet">
+  <link href="{% static 'vendor/simple-datatables/style.css' %}" rel="stylesheet">
+  <!-- Template Main CSS File -->
+  <link href="{% static 'css/style.css' %}" rel="stylesheet">
+  <link href="{% static 'css/custom.css' %}" rel="stylesheet">
+  <link href="{% static 'css/login.css' %}" rel="stylesheet">
+</head>
+
+<body>
+
+  <main>
+    <div class="container">
+      <section class="section register min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
+        <div class="container">
+          <div class="row justify-content-center">
+            <div class="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
+
+              <div class="d-flex justify-content-center py-4">
+                <a href="#" class="logo d-flex align-items-center w-auto">
+                  {% if configuracion and configuracion.logo %}
+                    <img src="{{ configuracion.logo.url }}" alt="Logo de Corfalmi" width="200">
+                  {% else %}
+                    <img src="{% static '../templates/../inventario/../media/logo1.png' %}" alt="Logo predeterminado" width="200">
+                  {% endif %}
+                </a>
+              </div><!-- End Logo -->
+
+              <div class="card mb-3">
+                <div class="card-body">
+                  <div class="pt-4 pb-2">
+                    <h5 class="card-title text-center pb-0 fs-4">Ingresar al sistema</h5>
+                    <p class="text-center small">Ingrese su nombre de usuario y contraseña para iniciar sesión</p>
+                  </div>
+                  
+                  <form class="row g-3 needs-validation" method="POST" action="{% url 'login_view' %}">
+                    {% csrf_token %}
+                    <div class="col-12">
+                      <label for="yourUsername" class="form-label">Usuario</label>
+                      <div class="input-group has-validation">
+                        <span class="input-group-text"><i class="fa fa-user"></i></span>
+                        <input type="text" name="username" class="form-control" required value="{{ form.username.value|default_if_none:'' }}">
+                        {% if form.username.errors %}
+                          <div class="invalid-feedback">{{ form.username.errors.0 }}</div>
+                        {% endif %}
+                      </div>
+                    </div>
+
+                    <div class="form-group position-relative">
+                      <label for="password" class="form-label">Contraseña</label>
+                      <div class="input-group has-validation">
+                        <span class="input-group-text"><i class="fa fa-lock"></i></span>
+                        <input type="password" name="password" id="password" class="form-control" style="z-index: 0;" autocomplete="off" required>
+                        <span class="show-pass-login" id="show-pass-p13">
+                          <i class="fa fa-eye-slash"></i>
+                          <i class="fa fa-eye"></i>
+                        </span>
+                        {% if form.password.errors %}
+                          <div class="invalid-feedback">{{ form.password.errors.0 }}</div>
+                        {% endif %}
+                      </div>
+                    </div>
+
+                    <!-- Campo captcha -->
+                    <div class="col-12">
+                      <label for="id_captcha_1" class="form-label">{{ form.captcha.label }}</label>
+                      <div class="input-group has-validation">
+                        <span class="input-group-text"><i class="fa fa-shield-alt"></i></span>
+                        {{ form.captcha|add_class:"form-control" }}
+                        {% if form.captcha.errors %}
+                          <div class="invalid-feedback">{{ form.captcha.errors.0 }}</div>
+                        {% endif %}
+                      </div>
+                    </div>
+
+                    {% if messages %}
+                      <div class="col-12">
+                        {% for message in messages %}
+                          <div class="alert alert-danger text-center py-2" style="font-size: 1rem; border-radius: 8px;">
+                            {{ message }}
+                          </div>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+
+                    {% if attempts_left is not None %}
+                      <div class="col-12">
+                        <div class="alert alert-warning text-center py-2" style="font-size: 1rem; border-radius: 8px;">
+                          Intentos restantes antes de bloqueo: {{ attempts_left }}
+                        </div>
+                      </div>
+                    {% endif %}
+
+                    <div class="col-12 d-flex flex-column align-items-center">
+                      <button class="btn btn-primary w-100" type="submit" id="login-button">Iniciar Sesión</button>
+                      <a href="{% url 'password_reset' %}" class="forgot-link mt-3 btn btn-link" style="text-decoration: none;">
+                        ¿Olvidaste tu contraseña?
+                      </a>
+                    </div>
+                  </form>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  <!-- Vendor JS Files -->
+  <script src="{% static 'js/jquery-3.7.0.min.js' %}"></script>
+  <script src="{% static 'vendor/apexcharts/apexcharts.min.js' %}"></script>
+  <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'vendor/chart.js/chart.umd.js' %}"></script>
+  <script src="{% static 'vendor/echarts/echarts.min.js' %}"></script>
+  <script src="{% static 'vendor/quill/quill.min.js' %}"></script>
+  <script src="{% static 'vendor/simple-datatables/simple-datatables.js' %}"></script>
+  <script src="{% static 'vendor/tinymce/tinymce.min.js' %}"></script>
+  <script src="{% static 'vendor/php-email-form/validate.js' %}"></script>
+  <!-- Template Main JS File -->
+  <script src="{% static 'js/main.js' %}"></script>
+  <script src="{% static 'js/usuarios/nuevo_usuario.js'%}"></script>
+
+</body>
+</html>

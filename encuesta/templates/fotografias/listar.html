@@ -1,0 +1,1122 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block contenido %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+/* Animaciones personalizadas */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes highlight {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+}
+
+/* Header principal con gradiente */
+.galeria-header {
+    background: linear-gradient(135deg, #0a58ca);
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.galeria-header .card-body {
+    padding: 2rem;
+}
+
+.galeria-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.galeria-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 1.5rem;
+}
+
+
+/* Cards de fotografías */
+.foto-card {
+    animation: fadeInUp 0.6s ease-out;
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+}
+
+.foto-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+}
+
+.foto-card .card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    background: #fff;
+    overflow: hidden;
+}
+
+.foto-card .card:hover {
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+}
+
+.foto-card .card-header {
+    background: linear-gradient(135deg, #0a58ca);
+    border: none;
+    padding: 0.75rem 1rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.foto-card .card-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.foto-card:hover .card-header::before {
+    left: 100%;
+}
+
+.encuesta-titulo {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.agregar-foto-btn {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff;
+    border-radius: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.agregar-foto-btn:hover {
+    background: rgba(255,255,255,0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.card-img-top {
+    border-radius: 0;
+    margin: 0;
+    max-height: 150px;
+    width: 100%;
+    object-fit: cover;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.card-img-top:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+.card-body {
+    padding: 1rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+.descripcion-corta {
+    color: #6c757d;
+    font-size: 0.8rem;
+    line-height: 1.3;
+}
+
+.card-footer {
+    background: #fff;
+    border-top: 1px solid #e9ecef;
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.25rem;
+}
+
+.card-footer .btn {
+    min-width: 32px;
+    min-height: 32px;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-footer .btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+}
+
+.card-footer .btn:hover::before {
+    width: 100%;
+    height: 100%;
+}
+
+.card-footer .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Buscador mejorado */
+.busqueda-container {
+    background: linear-gradient(135deg, #0a58ca);
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    animation: slideInRight 0.8s ease-out;
+}
+
+.busqueda-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.busqueda-header h4 {
+    color: #fff;
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.busqueda-header i {
+    color: #fff;
+    font-size: 1.8rem;
+    animation: pulse 2s infinite;
+}
+
+.busqueda-input-group {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.busqueda-input-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 300px;
+}
+
+.busqueda-input {
+    width: 100%;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 1rem;
+    padding: 1rem 3rem 1rem 3rem;
+    font-size: 1rem;
+    font-weight: 500;
+    outline: none;
+    transition: all 0.3s ease;
+    background: rgba(255,255,255,0.95);
+    color: #333;
+    backdrop-filter: blur(10px);
+}
+
+.busqueda-input:focus {
+    border-color: #fff;
+    background: #fff;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+.busqueda-input::placeholder {
+    color: #999;
+    font-weight: 400;
+}
+
+.busqueda-icon {
+    position: absolute;
+    left: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #667eea;
+    font-size: 1.2rem;
+    pointer-events: none;
+}
+
+.busqueda-clear-btn {
+    position: absolute;
+    right: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 1.3rem;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.busqueda-clear-btn:hover {
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+}
+
+.busqueda-clear-btn.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.busqueda-stats {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: rgba(255,255,255,0.2);
+    border-radius: 1rem;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    white-space: nowrap;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.busqueda-stats i {
+    font-size: 1.2rem;
+}
+
+/* Botones de filtro */
+.btn-group .btn {
+    border-radius: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.btn-group .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Estados de búsqueda */
+.foto-card.hidden {
+    display: none !important;
+}
+
+.encuesta-card.highlight {
+    animation: highlight 0.6s ease;
+}
+
+#noResultados {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: #fff;
+    border: none;
+    border-radius: 1rem;
+    padding: 2rem;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.1rem;
+    box-shadow: 0 8px 32px rgba(240, 147, 251, 0.3);
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Modales mejorados */
+.modal-flecha-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.modal-flecha-btn:hover {
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+#prevFotoBtn {
+    left: 15px;
+}
+
+#nextFotoBtn {
+    right: 15px;
+}
+
+#modalFotoImg {
+    max-width: 100%;
+    max-height: 450px;
+    border-radius: 1rem;
+    object-fit: contain;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+
+/* Estados especiales */
+.foto-card.sin-fotos {
+    opacity: 0.8;
+}
+
+.foto-card.sin-fotos .card-header {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+}
+
+.foto-card.sin-fotos .agregar-foto-btn {
+    background: rgba(255,255,255,0.3);
+    border-color: rgba(255,255,255,0.5);
+}
+
+.foto-card.sin-fotos .agregar-foto-btn:hover {
+    background: rgba(255,255,255,0.4);
+    transform: translateY(-2px);
+}
+
+/* Mejoras en el placeholder de imagen */
+.placeholder-imagen {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px dashed #dee2e6;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.placeholder-imagen:hover {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #f0f4ff 0%, #e6f0ff 100%);
+}
+
+/* Botones deshabilitados */
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.btn:disabled:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Animación de carga */
+@keyframes shimmer {
+    0% { background-position: -200px 0; }
+    100% { background-position: calc(200px + 100%) 0; }
+}
+
+.loading-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200px 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+/* Clase personalizada para 5 columnas en pantallas extra grandes */
+@media (min-width: 1200px) {
+    .col-xl-5-cards {
+        flex: 0 0 20%;
+        max-width: 20%;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .galeria-title {
+        font-size: 2rem;
+    }
+    
+    .busqueda-input-group {
+        flex-direction: column;
+    }
+    
+    .busqueda-input-wrapper {
+        min-width: 100%;
+    }
+    
+    .foto-card .card-header {
+        padding: 0.75rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .encuesta-titulo {
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 0.8rem;
+    }
+    
+    .agregar-foto-btn {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        min-width: auto;
+    }
+    
+    .agregar-foto-btn i {
+        display: none;
+    }
+    
+    .foto-card .card-body {
+        padding: 0.75rem;
+    }
+    
+    .foto-card .card-footer {
+        padding: 0.5rem;
+        gap: 0.25rem;
+    }
+    
+    .card-footer .btn {
+        min-width: 28px;
+        min-height: 28px;
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .foto-card .card-header {
+        padding: 0.5rem;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+    
+    .foto-card .card-header > div:first-child {
+        justify-content: center;
+        text-align: center;
+    }
+    
+    .encuesta-titulo {
+        max-width: 100%;
+        text-align: center;
+        font-size: 0.85rem;
+    }
+    
+    .agregar-foto-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 0.4rem 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    .agregar-foto-btn i {
+        display: inline-block;
+        margin-right: 0.25rem;
+    }
+    
+    .foto-card .card-body {
+        padding: 0.5rem;
+    }
+    
+    .foto-card .card-body h6 {
+        font-size: 0.85rem;
+    }
+    
+    .foto-card .card-body p {
+        font-size: 0.8rem;
+    }
+    
+    .foto-card .card-footer {
+        padding: 0.4rem;
+        gap: 0.5rem;
+    }
+    
+    .foto-card .card-footer .btn {
+        flex: 1;
+        padding: 0.4rem;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .foto-card .card-header {
+        padding: 0.4rem;
+    }
+    
+    .encuesta-titulo {
+        font-size: 0.8rem;
+    }
+    
+    .agregar-foto-btn {
+        padding: 0.3rem 0.4rem;
+        font-size: 0.75rem;
+    }
+    
+    .foto-card .card-body {
+        padding: 0.4rem;
+    }
+    
+    .foto-card .card-footer {
+        padding: 0.3rem;
+        gap: 0.25rem;
+    }
+    
+    .foto-card .card-footer .btn {
+        padding: 0.3rem 0.4rem;
+        font-size: 0.75rem;
+    }
+}
+</style>
+
+<div class="container-fluid mt-4">
+    
+   <!-- Buscador mejorado -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="busqueda-container">
+                <div class="busqueda-header">
+                    <i class="fas fa-search"></i>
+                    <h4>Buscar Fotografías</h4>
+                </div>
+                <div class="busqueda-input-group">
+                    <div class="busqueda-input-wrapper">
+                        <i class="fas fa-search busqueda-icon"></i>
+                        <input type="text" id="busquedaFotos" class="busqueda-input" placeholder="Buscar por título de encuesta...">
+                        <button type="button" class="busqueda-clear-btn" id="clearSearchBtn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="busqueda-stats" id="searchStats">
+                        <i class="fas fa-images"></i>
+                        <span id="statsText">{{ todos_los_grupos|length }} elemento{{ todos_los_grupos|length|pluralize }}</span>
+                    </div>
+                </div>
+        
+            </div>
+        </div>
+    </div>
+
+    <!-- GRID DE TARJETAS -->
+    <div class="row justify-content-center" id="fotosContainer">
+        {% for grupo in todos_los_grupos %}
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-5-cards mb-3 d-flex foto-card {% if not grupo.fotos %}sin-fotos{% endif %}" 
+             data-titulo="{{ grupo.encuesta.titulo|lower }}"
+             data-tipo="{{ grupo.tipo }}">
+            <div class="card h-100 w-100 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-file-text me-2"></i>
+                        <span class="encuesta-titulo" title="{{ grupo.encuesta.titulo }}">{{ grupo.encuesta.titulo }}</span>
+                    </div>
+                    <button class="agregar-foto-btn" 
+                            data-encuesta="{{ grupo.encuesta.id }}"
+                            title="Agregar fotografía">
+                        <i class="fas fa-plus me-1"></i> Agregar
+                    </button>
+                </div>
+                {% if grupo.fotos %}
+                {% with foto=grupo.fotos.0 %}
+                {% if foto.imagen %}
+                <div class="position-relative">
+                    <img src="{{ foto.imagen.url }}" class="card-img-top ver-foto-btn" alt="Foto"
+                         data-encuesta="{{ grupo.encuesta.id }}"
+                         data-index="0">
+                    <div class="position-absolute top-0 end-0 m-2">
+                        <span class="badge bg-primary rounded-pill px-2 py-1">
+                            <i class="fas fa-images me-1"></i>{{ grupo.fotos.count }}
+                        </span>
+                    </div>
+                </div>
+                {% else %}
+                <div class="position-relative d-flex align-items-center justify-content-center" style="height: 150px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+                    <div class="text-center">
+                        <i class="fas fa-image text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-2 mb-0">Sin imagen</p>
+                    </div>
+                    <div class="position-absolute top-0 end-0 m-2">
+                        <span class="badge bg-primary rounded-pill px-2 py-1">
+                            <i class="fas fa-images me-1"></i>{{ grupo.fotos.count }}
+                        </span>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="fw-bold text-dark mb-2">
+                            <i class="fas fa-file-text me-2 text-primary"></i>Descripción
+                        </h6>
+                        <p class="descripcion-corta mb-0">{{ grupo.encuesta.descripcion|default:'Sin descripción.'|truncatechars:40 }}</p>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Fecha creación</small>
+                            <small class="fw-semibold">{{ grupo.encuesta.fecha_creacion|date:"d M Y" }}</small>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Fotografías</small>
+                            <small class="fw-semibold text-primary">{{ grupo.fotos.count }}</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex justify-content-center align-items-center gap-2">
+                    <button class="btn btn-outline-primary btn-sm ver-foto-btn"
+                            data-encuesta="{{ grupo.encuesta.id }}"
+                            data-index="0" title="Ver galería">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <a href="{% url 'editar_fotografia' foto.id %}" class="btn btn-outline-secondary btn-sm" title="Editar">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <button class="btn btn-outline-danger btn-sm borrar-foto-btn" data-id="{{ foto.id }}" title="Eliminar">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                {% endwith %}
+                {% else %}
+                <div class="position-relative d-flex align-items-center justify-content-center placeholder-imagen" style="height: 150px;">
+                    <div class="text-center">
+                        <i class="fas fa-image text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-2 mb-0">No hay fotografías</p>
+                        <small class="text-muted">Haz clic en "Agregar" para subir fotos</small>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="fw-bold text-dark mb-2">
+                            <i class="fas fa-file-text me-2 text-primary"></i>Descripción
+                        </h6>
+                        <p class="descripcion-corta mb-0">{{ grupo.encuesta.descripcion|default:'Sin descripción.'|truncatechars:40 }}</p>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Fecha creación</small>
+                            <small class="fw-semibold">{{ grupo.encuesta.fecha_creacion|date:"d M Y" }}</small>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Fotografías</small>
+                            <small class="fw-semibold text-primary">0</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex justify-content-center align-items-center gap-2">
+                    <button class="btn btn-outline-primary btn-sm" disabled title="No hay fotos para ver">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" disabled title="No hay fotos para editar">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" disabled title="No hay fotos para eliminar">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div id="noResultados" class="alert mt-4 text-center py-5" style="display: none;">
+        <div class="mb-3">
+            <i class="fas fa-search text-muted" style="font-size: 3rem;"></i>
+        </div>
+        <h5 class="text-muted mb-2">No se encontraron resultados</h5>
+        <p class="text-muted mb-0">Intenta con otros términos de búsqueda o ajusta los filtros.</p>
+    </div>
+    
+    {% if not todos_los_grupos %}
+    <div class="alert alert-info text-center py-4">
+        <i class="fas fa-images me-2" style="font-size: 2rem;"></i>
+        <h5 class="mt-2">No hay fotografías registradas</h5>
+        <p class="mb-0">Comienza agregando fotografías a tus encuestas.</p>
+    </div>
+    {% endif %}
+</div>
+
+ <!-- MODAL GALERÍA MEJORADO -->
+ <div class="modal fade" id="galeriaModal" tabindex="-1" aria-labelledby="galeriaModalLabel" aria-hidden="true">
+   <div class="modal-dialog modal-xl modal-dialog-centered">
+     <div class="modal-content border-0 shadow-lg">
+       <div class="modal-header bg-primary text-white border-0">
+         <h5 class="modal-title d-flex align-items-center" id="galeriaModalLabel">
+           <i class="fas fa-images me-3 fs-4"></i>
+           <span>Galería de Fotografías</span>
+         </h5>
+         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+       </div>
+       <div class="modal-body p-0">
+         <div class="row g-0">
+           <div class="col-md-8 d-flex align-items-center justify-content-center position-relative" style="min-height: 500px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+             <button type="button" class="modal-flecha-btn" id="prevFotoBtn" style="display:none;">
+               <i class="fas fa-chevron-left"></i>
+             </button>
+             <img id="modalFotoImg" src="" alt="Fotografía" class="img-fluid rounded shadow" style="max-height: 450px; object-fit: contain;">
+             <button type="button" class="modal-flecha-btn" id="nextFotoBtn" style="display:none;">
+               <i class="fas fa-chevron-right"></i>
+             </button>
+           </div>
+           <div class="col-md-4 p-4" id="modalFotoInfo" style="background: #fff;">
+             <!-- Información de la foto se cargará aquí -->
+           </div>
+         </div>
+       </div>
+     </div>
+   </div>
+ </div>
+ 
+ <!-- MODAL AGREGAR FOTO MEJORADO -->
+ <div class="modal fade" id="agregarFotoModal" tabindex="-1" aria-labelledby="agregarFotoModalLabel" aria-hidden="true">
+   <div class="modal-dialog modal-dialog-centered">
+     <div class="modal-content border-0 shadow-lg">
+       <form id="agregarFotoForm" enctype="multipart/form-data">
+         {% csrf_token %}
+         <div class="modal-header bg-success text-white border-0">
+           <h5 class="modal-title d-flex align-items-center" id="agregarFotoModalLabel">
+             <i class="fas fa-plus-circle me-3 fs-4"></i>
+             <span>Agregar Nueva Fotografía</span>
+           </h5>
+           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+         </div>
+         <div class="modal-body text-center py-4">
+           <div class="mb-4">
+             <i class="fas fa-cloud-upload-alt text-success" style="font-size: 3rem;"></i>
+           </div>
+           <input type="hidden" name="encuesta_id" id="agregarFotoEncuestaId">
+           <input type="hidden" name="tipo" id="agregarFotoTipo" value="encuesta">
+           <div class="mb-4">
+             <label for="agregarFotoImagen" class="form-label fw-bold">Seleccionar Imagen</label>
+             <input type="file" class="form-control form-control-lg" id="agregarFotoImagen" name="imagen" accept="image/*" required>
+             <div class="form-text">
+               <i class="fas fa-info-circle me-1"></i>
+               Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 10MB.
+             </div>
+           </div>
+         </div>
+         <div class="modal-footer border-0 justify-content-center">
+           <button type="submit" class="btn btn-success btn-lg px-4 me-2">
+             <i class="fas fa-check me-2"></i>Guardar Fotografía
+           </button>
+           <button type="button" class="btn btn-outline-secondary btn-lg px-4" data-bs-dismiss="modal">
+             <i class="fas fa-times me-2"></i>Cancelar
+           </button>
+         </div>
+       </form>
+     </div>
+   </div>
+ </div>
+ 
+ <!-- MODAL CONFIRMAR ELIMINACIÓN MEJORADO -->
+ <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+   <div class="modal-dialog modal-dialog-centered">
+     <div class="modal-content border-0 shadow-lg">
+       <div class="modal-header bg-danger text-white border-0">
+         <h5 class="modal-title d-flex align-items-center" id="confirmDeleteModalLabel">
+           <i class="fas fa-exclamation-triangle me-3 fs-4"></i>
+           <span>Confirmar Eliminación</span>
+         </h5>
+         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+       </div>
+       <div class="modal-body text-center py-4">
+         <div class="mb-4">
+           <i class="fas fa-trash text-danger" style="font-size: 3rem;"></i>
+         </div>
+         <h6 class="fw-bold text-dark mb-3">¿Estás seguro de eliminar esta fotografía?</h6>
+         <p class="text-muted mb-4">
+           Esta acción no se puede deshacer. La fotografía será eliminada permanentemente del sistema.
+         </p>
+       </div>
+       <div class="modal-footer border-0 justify-content-center">
+         <button type="button" class="btn btn-danger btn-lg px-4 me-2" id="confirmDeleteBtn">
+           <i class="fas fa-trash me-2"></i>Eliminar
+         </button>
+         <button type="button" class="btn btn-outline-secondary btn-lg px-4" data-bs-dismiss="modal">
+           <i class="fas fa-times me-2"></i>Cancelar
+         </button>
+       </div>
+     </div>
+   </div>
+ </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+     // Datos de fotografías por encuesta
+     const encuestasFotos = {
+       {% for grupo in encuestas_fotos %}
+         "{{ grupo.encuesta.id }}": [
+           {% for foto in grupo.fotos %}
+           {
+             id: {{ foto.id }},
+             imagen: "{{ foto.imagen.url }}",
+             fecha_subida: "{{ foto.fecha_subida|date:'d M Y H:i' }}",
+             tipo: 'encuesta',
+             encuesta: {
+               titulo: "{{ grupo.encuesta.titulo|escapejs }}",
+               descripcion: "{{ grupo.encuesta.descripcion|escapejs }}",
+               fecha_creacion: "{{ grupo.encuesta.fecha_creacion|date:'d M Y H:i'|default:'Sin fecha' }}",
+               fecha_finalizacion: "{{ grupo.encuesta.fecha_finalizacion|date:'d M Y'|default:'Sin fecha' }}"
+             }
+           }{% if not forloop.last %},{% endif %}
+           {% endfor %}
+         ]{% if not forloop.last %},{% endif %}
+       {% endfor %}
+     };
+
+    let currentFotos = [];
+    let currentIndex = 0;
+    let fotoIdToDelete = null;
+
+     // Función para mostrar foto en modal
+     function mostrarFoto(index) {
+       if (index < 0 || index >= currentFotos.length) return;
+       currentIndex = index;
+       const foto = currentFotos[index];
+       
+       document.getElementById('modalFotoImg').src = foto.imagen;
+       document.getElementById('prevFotoBtn').style.display = (currentFotos.length > 1 && index > 0) ? 'flex' : 'none';
+       document.getElementById('nextFotoBtn').style.display = (currentFotos.length > 1 && index < currentFotos.length - 1) ? 'flex' : 'none';
+       
+       let infoHtml = `
+         <div class="mb-4">
+           <h4 class="fw-bold text-primary mb-3">
+             <i class="fas fa-file-text me-2"></i>${foto.encuesta.titulo}
+           </h4>
+           <div class="card border-0 shadow-sm">
+             <div class="card-body">
+               <h6 class="fw-bold text-dark mb-3">
+                 <i class="fas fa-info-circle me-2 text-info"></i>Información de la Encuesta
+               </h6>
+               <p class="mb-3"><strong>Descripción:</strong><br>${foto.encuesta.descripcion.length > 100 ? foto.encuesta.descripcion.substring(0, 100) + '...' : foto.encuesta.descripcion}</p>
+               <div class="row">
+                 <div class="col-6">
+                   <small class="text-muted d-block">Fecha creación</small>
+                   <span class="fw-semibold">${foto.encuesta.fecha_creacion}</span>
+                 </div>
+                 <div class="col-6">
+                   <small class="text-muted d-block">Fecha finalización</small>
+                   <span class="fw-semibold">${foto.encuesta.fecha_finalizacion}</span>
+                 </div>
+               </div>
+             </div>
+           </div>
+           <div class="card border-0 shadow-sm mt-3">
+             <div class="card-body">
+               <h6 class="fw-bold text-dark mb-3">
+                 <i class="fas fa-camera me-2 text-success"></i>Información de la Fotografía
+               </h6>
+               <p class="mb-2"><strong>Fecha de subida:</strong> ${foto.fecha_subida}</p>
+               <div class="d-grid gap-2 mt-3">
+                 <a href="/fotografias/${foto.id}/editar/" class="btn btn-outline-primary btn-sm">
+                   <i class="fas fa-edit me-1"></i> Editar Fotografía
+                 </a>
+                 <button type="button" class="btn btn-outline-danger btn-sm" onclick="borrarFotoModal(${foto.id})">
+                   <i class="fas fa-trash me-1"></i> Eliminar Fotografía
+                 </button>
+               </div>
+             </div>
+           </div>
+         </div>
+       `;
+       document.getElementById('modalFotoInfo').innerHTML = infoHtml;
+     }
+
+    // Ver foto
+    document.querySelectorAll('.ver-foto-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const encuestaId = this.getAttribute('data-encuesta');
+        const idx = parseInt(this.getAttribute('data-index'));
+        
+        currentFotos = encuestasFotos[encuestaId] || [];
+        
+        mostrarFoto(idx);
+        new bootstrap.Modal(document.getElementById('galeriaModal')).show();
+      });
+    });
+
+    // Navegación fotos
+    document.getElementById('prevFotoBtn').addEventListener('click', () => mostrarFoto(currentIndex - 1));
+    document.getElementById('nextFotoBtn').addEventListener('click', () => mostrarFoto(currentIndex + 1));
+
+    // Agregar foto
+    document.querySelectorAll('.agregar-foto-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const encuestaId = this.getAttribute('data-encuesta');
+        
+        // Limpiar campos
+        document.getElementById('agregarFotoEncuestaId').value = encuestaId;
+        document.getElementById('agregarFotoTipo').value = 'encuesta';
+        
+        document.getElementById('agregarFotoForm').reset();
+        new bootstrap.Modal(document.getElementById('agregarFotoModal')).show();
+      });
+    });
+
+    document.getElementById('agregarFotoForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      fetch('/fotografias/agregar/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest' },
+        body: formData
+      }).then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert(data.error || 'Error al agregar la fotografía.');
+          }
+        });
+    });
+
+    // Borrar foto
+    window.borrarFotoModal = function(fotoId) {
+      fotoIdToDelete = fotoId;
+      new bootstrap.Modal(document.getElementById('confirmDeleteModal')).show();
+    };
+
+    document.querySelectorAll('.borrar-foto-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        borrarFotoModal(this.getAttribute('data-id'));
+      });
+    });
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+      if (!fotoIdToDelete) return;
+      fetch(`/fotografias/${fotoIdToDelete}/borrar/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest' }
+      }).then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert('Error al borrar la fotografía.');
+          }
+        });
+    });
+
+     // BUSCADOR MEJORADO
+     const busquedaInput = document.getElementById('busquedaFotos');
+     const clearBtn = document.getElementById('clearSearchBtn');
+     const statsText = document.getElementById('statsText');
+     const noResultadosMsg = document.getElementById('noResultados');
+     const fotosContainer = document.getElementById('fotosContainer');
+     const totalCards = fotosContainer.querySelectorAll('.foto-card').length;
+
+     // Función de búsqueda con debounce
+     let searchTimeout;
+     busquedaInput.addEventListener('input', function() {
+         clearTimeout(searchTimeout);
+         searchTimeout = setTimeout(() => {
+             realizarBusqueda();
+         }, 300);
+     });
+
+     function realizarBusqueda() {
+         const valor = busquedaInput.value.trim().toLowerCase();
+         const cards = fotosContainer.querySelectorAll('.foto-card');
+         let resultadosVisibles = 0;
+
+         clearBtn.classList.toggle('active', valor !== '');
+
+         cards.forEach((card, index) => {
+             const titulo = card.getAttribute('data-titulo') || '';
+             const tipo = card.getAttribute('data-tipo') || '';
+             
+             // Si no hay búsqueda, mostrar todas las tarjetas
+             if (valor === '') {
+                 card.classList.remove('hidden');
+                 resultadosVisibles++;
+             } else {
+                 // Buscar en título y tipo
+                 const coincideTitulo = titulo.includes(valor);
+                 const coincideTipo = tipo.includes(valor);
+                 
+                 if (coincideTitulo || coincideTipo) {
+                     card.classList.remove('hidden');
+                     card.classList.add('highlight');
+                     setTimeout(() => card.classList.remove('highlight'), 600);
+                     resultadosVisibles++;
+                 } else {
+                     card.classList.add('hidden');
+                 }
+             }
+         });
+
+         // Actualizar estadísticas
+         if (valor === '') {
+             statsText.textContent = `${totalCards} elemento${totalCards !== 1 ? 's' : ''}`;
+         } else {
+             statsText.textContent = `${resultadosVisibles} de ${totalCards} elemento${resultadosVisibles !== 1 ? 's' : ''}`;
+         }
+
+         // Mostrar/ocultar mensaje de no resultados
+         if (valor !== '' && resultadosVisibles === 0) {
+             noResultadosMsg.style.display = 'block';
+         } else {
+             noResultadosMsg.style.display = 'none';
+         }
+     }
+
+     clearBtn.addEventListener('click', function() {
+         busquedaInput.value = '';
+         realizarBusqueda();
+         busquedaInput.focus();
+     });
+
+     // Búsqueda al cargar la página
+     realizarBusqueda();
+});
+</script>
+{% endblock %}

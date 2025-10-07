@@ -1,0 +1,85 @@
+<div class="row mt-3">
+  <div class="col-12">
+
+  </div>
+</div>
+<div class="row">
+  <div class="col-xl-4 col-xxl-4 col-sm-6">
+    <div class="form-group position-relative">
+      <label for="username">Nombre de Usuario</label>
+      <input
+        class="form-control form-control-sm"
+        type="text"
+        name="username"
+        id="id_username"
+        value="{{form.username.value|default:''}}"
+      />
+      {{form.username.errors}}
+    </div>
+  </div>
+  <div class="col-xl-4 col-xxl-4 col-sm-6">
+    <div class="form-group position-relative">
+      <label for="first_name">Nombre</label>
+      <input
+        class="form-control form-control-sm"
+        type="text"
+        name="first_name"
+        id="id_first_name"
+        value="{{form.first_name.value|default:''}}"
+      />
+      {{form.first_name.errors}}
+    </div>
+  </div>
+  <div class="col-xl-4 col-xxl-4 col-sm-6">
+    <div class="form-group position-relative">
+      <label for="last_name">Apellido</label>
+      <input
+        class="form-control form-control-sm"
+        type="text"
+        name="last_name"
+        id="id_last_name"
+        value="{{form.last_name.value|default:''}}"
+      />
+      {{form.last_name.errors}}
+    </div>
+  </div>
+  <div class="col-xl-4 col-xxl-4 col-sm-6">
+    <div class="form-group position-relative">
+      <label for="email">Email</label>
+      <input
+        class="form-control form-control-sm"
+        type="email"
+        name="email"
+        id="id_email"
+        value="{{form.email.value|default:''}}"
+      />
+      {{form.email.errors}}
+    </div>
+  </div>
+</div>
+<div class="row mt-3">
+  <div class="col-12">
+    <h5>Información de Permisos</h5>
+  </div>
+</div>
+<div class="row">
+  <div class="col-xl-3 col-xxl-3 col-sm-6">
+    <div class="form-group position-relative">
+  <label for="grupo">Grupo</label>
+ <select
+  class="default-select form-control form-control-sm wide"
+  name="grupo"
+  id="grupo">
+  <option value="">Seleccione</option>
+  {% for g in grupos %}
+    {% if g.name == grupoUsuario %}
+      <option value="{{g.name}}" selected>{{g.name}}</option>
+    {% else %}
+      <option value="{{g.name}}">{{g.name}}</option>
+    {% endif %}
+  {% endfor %}
+</select>
+  {{form.grupo.errors}}
+</div>
+  </div>
+</div>

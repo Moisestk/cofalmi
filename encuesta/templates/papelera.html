@@ -1,0 +1,1274 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Papelera General - CORFALMI{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block contenido %}
+{% csrf_token %}
+
+<!-- Container para toasts -->
+<div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;">
+  <div id="toast-container"></div>
+</div>
+
+<!-- Información del Centro de Reciclaje -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="info-card">
+            <div class="info-content">
+                <div class="info-left">
+                    <div class="info-icon">
+                        <i class="bi bi-recycle"></i>
+                    </div>
+                    <div class="info-text">
+                        <h3>Centro de Reciclaje</h3>
+                        <p>Elementos temporales del sistema - {{ encuestas|length|add:encuestados|length }} elementos</p>
+                    </div>
+                </div>
+                <div class="info-right">
+                    <span class="info-date" id="currentDate"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  
+<!-- Filtros y Acciones -->
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-funnel me-2"></i>
+                    Filtrar Elementos
+                </h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">Categoría:</label>
+                        <select class="form-select" id="categoria-filter">
+                            {% with total=encuestas|length|add:encuestados|length %}
+                            <option value="todos">Todos ({{ total }})</option>
+                            {% endwith %}
+                            <option value="encuestas">Encuestas ({{ encuestas|length }})</option>
+                            <option value="encuestados">Encuestados ({{ encuestados|length }})</option>
+        </select>
+    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Buscar:</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" placeholder="Buscar elementos..." id="searchInput">
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-lightning-charge me-2"></i>
+                    Acciones Rápidas
+                </h5>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#confirmRestoreAllModal">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Restaurar Todo
+                                    </button>
+                    <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#confirmClearAllModal">
+                        <i class="bi bi-trash3 me-2"></i>Limpiar Todo
+                                    </button>
+                            </div>
+            </div>
+                            </div>
+            </div>
+        </div>
+
+<!-- Contenido Principal -->
+<div class="row">
+    <div class="col-12">
+
+                <!-- Grid de Elementos -->
+                <div class="items-container">
+                    <!-- Todos los elementos -->
+                    <div id="todos-section" class="items-section active">
+                        {% if encuestas or encuestados %}
+                        <div class="items-grid">
+                            <!-- Encuestas -->
+                    {% for encuesta in encuestas %}
+                            <div class="item-card" data-item="{{ encuesta.id }}" data-name="{{ encuesta.titulo }}" data-type="encuesta">
+                                <div class="item-header">
+                                    <div class="item-icon">
+                                        <i class="bi bi-file-earmark-text"></i>
+                                    </div>
+                                    <div class="item-status">
+                                        <span class="status-badge">Eliminada</span>
+                                    </div>
+                                </div>
+                                <div class="item-body">
+                                    <h3 class="item-title" title="{{ encuesta.titulo }}">{{ encuesta.titulo }}</h3>
+                                    <p class="item-description">{{ encuesta.descripcion|truncatechars:60|default:"Sin descripción" }}</p>
+                                    <div class="item-details">
+                                        <span class="detail-item">
+                                            <i class="bi bi-calendar"></i>
+                            {% if encuesta.fecha_finalizacion %}
+                                {{ encuesta.fecha_finalizacion|date:"d/m/Y" }}
+                            {% else %}
+                                Sin fecha
+                            {% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="item-actions">
+                                    <button class="action-btn restore" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#confirmRestoreModal"
+                                            data-item-name="{{ encuesta.titulo }}"
+                                            data-item-type="encuesta">
+                                        <i class="bi bi-arrow-clockwise"></i>
+                                        Restaurar
+                                    </button>
+                                    <button class="action-btn delete" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#confirmDeleteModal"
+                                            data-item-name="{{ encuesta.titulo }}"
+                                            data-item-type="encuesta">
+                                        <i class="bi bi-trash3"></i>
+                                        Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                    {% endfor %}
+                            
+                            <!-- Encuestados -->
+                            {% for encuestado in encuestados %}
+                            <div class="item-card" data-item="{{ encuestado.id }}" data-name="{{ encuestado.nombre }} {{ encuestado.apellido }}" data-type="encuestado">
+                                <div class="item-header">
+                                    <div class="item-icon">
+                                        <i class="bi bi-people"></i>
+                                    </div>
+                                    <div class="item-status">
+                                        <span class="status-badge">Eliminado</span>
+                                    </div>
+                                </div>
+                                <div class="item-body">
+                                    <h3 class="item-title" title="{{ encuestado.nombre }} {{ encuestado.apellido }}">{{ encuestado.nombre }} {{ encuestado.apellido }}</h3>
+                                    <p class="item-description">Encuestado eliminado</p>
+                                    <div class="item-details">
+                                        <span class="detail-item">
+                                            <i class="bi bi-card-text"></i>
+                                            Cédula: {{ encuestado.cedula }}
+                                        </span>
+            </div>
+        </div>
+                                <div class="item-actions">
+                                    <button class="action-btn restore" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#confirmRestoreModal"
+                                            data-item-name="{{ encuestado.nombre }} {{ encuestado.apellido }}"
+                                            data-item-type="encuestado">
+                                        <i class="bi bi-arrow-clockwise"></i>
+                                        Restaurar
+                                    </button>
+                                    <button class="action-btn delete" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#confirmDeleteModal"
+                                            data-item-name="{{ encuestado.nombre }} {{ encuestado.apellido }}"
+                                            data-item-type="encuestado">
+                                        <i class="bi bi-trash3"></i>
+                                        Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                    {% endfor %}
+                        </div>
+            {% else %}
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="bi bi-recycle"></i>
+                            </div>
+                            <h3>No hay elementos eliminados</h3>
+                            <p>Los elementos eliminados aparecerán aquí</p>
+            </div>
+            {% endif %}
+        </div>
+
+                    <!-- Encuestas -->
+                    <div id="encuestas-section" class="items-section">
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="bi bi-file-earmark-text"></i>
+                            </div>
+                            <h3>Usa "Todos" para ver las encuestas</h3>
+                            <p>Las encuestas aparecen en la sección "Todos" junto con los encuestados</p>
+    </div>
+</div>
+
+                    <!-- Encuestados -->
+                    <div id="encuestados-section" class="items-section">
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="bi bi-people"></i>
+                            </div>
+                            <h3>Usa "Todos" para ver los encuestados</h3>
+                            <p>Los encuestados aparecen en la sección "Todos" junto con las encuestas</p>
+                        </div>
+                    </div>
+                            </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación para Restaurar -->
+<div class="modal fade" id="confirmRestoreModal" tabindex="-1" aria-labelledby="confirmRestoreModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmRestoreModalLabel">
+                    <i class="bi bi-arrow-clockwise me-2"></i>
+                    Confirmar Restauración
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+                <div class="modal-icon">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </div>
+                <h6 class="modal-question">¿Estás seguro de restaurar este elemento?</h6>
+                <p class="modal-description">El elemento será restaurado y volverá a estar disponible en el sistema.</p>
+                <div class="modal-item">
+                    <strong>Elemento:</strong> <span id="restore-item-name"></span>
+                </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="confirmRestoreBtn">
+                    <i class="bi bi-check me-2"></i>Confirmar Restauración
+                </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Confirmación para Limpiar Todo -->
+<div class="modal fade" id="confirmClearAllModal" tabindex="-1" aria-labelledby="confirmClearAllModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmClearAllModalLabel">
+                    <i class="bi bi-trash3 me-2"></i>
+                    Confirmar Limpieza Total
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-icon">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <h6 class="modal-question">¿Estás seguro de eliminar permanentemente todos los elementos?</h6>
+                <p class="modal-description">Esta acción eliminará permanentemente todos los elementos de la papelera y no se puede deshacer.</p>
+                
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>¡Advertencia!</strong> Esta acción es irreversible y eliminará permanentemente todos los datos.
+                </div>
+                
+                <div class="modal-item">
+                    <strong>Total de elementos:</strong> <span id="total-items-to-delete"></span>
+                </div>
+                
+                <!-- Campo de contraseña del super usuario -->
+                <div class="mt-3">
+                    <label for="clear-password" class="form-label">
+                        <i class="bi bi-shield-lock me-2"></i>
+                        Contraseña del Super Usuario:
+                    </label>
+                    <input type="password" class="form-control" id="clear-password" placeholder="Ingresa la contraseña del super usuario">
+                    <div id="clear-password-error" class="text-danger mt-2" style="display:none;"></div>
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Se requiere contraseña de super usuario (mínimo 3 caracteres) para eliminaciones permanentes
+                    </small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmClearAllBtn" disabled>
+                    <i class="bi bi-trash3 me-2"></i>Eliminar Todo Permanentemente
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación para Restaurar Todo -->
+<div class="modal fade" id="confirmRestoreAllModal" tabindex="-1" aria-labelledby="confirmRestoreAllModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmRestoreAllModalLabel">
+                    <i class="bi bi-arrow-clockwise me-2"></i>
+                    Confirmar Restauración Masiva
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+                <div class="modal-icon">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </div>
+                <h6 class="modal-question">¿Estás seguro de restaurar todos los elementos?</h6>
+                <p class="modal-description">Se restaurarán todos los elementos eliminados y volverán a estar disponibles en el sistema.</p>
+                
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Información:</strong> Esta acción restaurará todos los elementos de la papelera.
+                </div>
+                
+                <div class="modal-item">
+                    <strong>Total de elementos:</strong> <span id="total-items-count"></span>
+                </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="confirmRestoreAllBtn">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Restaurar Todos
+                </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Confirmación para Eliminar -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Confirmar Eliminación Definitiva
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+                <div class="modal-icon warning">
+                    <i class="bi bi-trash3"></i>
+                </div>
+                <h6 class="modal-question">¿Estás seguro de eliminar definitivamente este elemento?</h6>
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>¡Advertencia!</strong> Esta acción no se puede deshacer.
+                </div>
+                <div class="modal-item">
+                    <strong>Elemento:</strong> <span id="delete-item-name"></span>
+                </div>
+                
+                <!-- Campo de contraseña del super usuario -->
+                <div class="mt-3">
+                    <label for="delete-password" class="form-label">
+                        <i class="bi bi-shield-lock me-2"></i>
+                        Contraseña del Super Usuario:
+                    </label>
+                    <input type="password" class="form-control" id="delete-password" placeholder="Ingresa la contraseña del super usuario">
+                    <div id="delete-password-error" class="text-danger mt-2" style="display:none;"></div>
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Se requiere contraseña de super usuario (mínimo 3 caracteres) para eliminaciones permanentes
+                    </small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn" disabled>
+                    <i class="bi bi-trash me-2"></i>Eliminar Definitivamente
+                </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Actualizar fecha
+    actualizarFecha();
+    
+    // Actualizar contadores al cargar la página
+    actualizarContadores();
+    
+    // Filtro de categoría
+    const categoriaFilter = document.getElementById('categoria-filter');
+    const sections = document.querySelectorAll('.items-section');
+    
+    categoriaFilter.addEventListener('change', function() {
+        const selectedCategory = this.value;
+        
+        // Ocultar todas las secciones
+        sections.forEach(section => {
+            section.classList.remove('active');
+        });
+        
+        if (selectedCategory === 'todos') {
+            // Mostrar todos los elementos
+            const todosSection = document.getElementById('todos-section');
+            if (todosSection) {
+                todosSection.classList.add('active');
+                // Mostrar todos los elementos
+                todosSection.querySelectorAll('.item-card').forEach(card => {
+                    card.style.display = 'block';
+                });
+            }
+        } else {
+            // Filtrar elementos por tipo
+            const todosSection = document.getElementById('todos-section');
+            if (todosSection) {
+                todosSection.classList.add('active');
+                
+                // Ocultar todos los elementos primero
+                todosSection.querySelectorAll('.item-card').forEach(card => {
+                    card.style.display = 'none';
+                });
+                
+                // Mostrar solo los elementos del tipo seleccionado
+                const targetType = selectedCategory === 'encuestas' ? 'encuesta' : 'encuestado';
+                todosSection.querySelectorAll(`.item-card[data-type="${targetType}"]`).forEach(card => {
+                    card.style.display = 'block';
+                });
+            }
+        }
+        
+        // Actualizar contadores después de cambiar sección
+        actualizarContadores();
+    });
+    
+    // Búsqueda
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const itemCards = document.querySelectorAll('.item-card');
+        
+        itemCards.forEach(card => {
+            const itemName = card.getAttribute('data-name').toLowerCase();
+            if (itemName.includes(searchTerm)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+    
+    // Modales
+    const restoreModal = document.getElementById('confirmRestoreModal');
+    const deleteModal = document.getElementById('confirmDeleteModal');
+    const restoreAllModal = document.getElementById('confirmRestoreAllModal');
+    const clearAllModal = document.getElementById('confirmClearAllModal');
+    
+    // Modal de restaurar todo
+    restoreAllModal.addEventListener('show.bs.modal', function (event) {
+        const totalItems = document.querySelectorAll('.item-card').length;
+        document.getElementById('total-items-count').textContent = totalItems;
+    });
+    
+    // Modal de limpiar todo
+    clearAllModal.addEventListener('show.bs.modal', function (event) {
+        const totalItems = document.querySelectorAll('.item-card').length;
+        document.getElementById('total-items-to-delete').textContent = totalItems;
+        
+        // Limpiar campo de contraseña y habilitar/deshabilitar botón
+        const passwordInput = document.getElementById('clear-password');
+        const confirmBtn = document.getElementById('confirmClearAllBtn');
+        const errorDiv = document.getElementById('clear-password-error');
+        
+        passwordInput.value = '';
+        confirmBtn.disabled = true;
+        errorDiv.style.display = 'none';
+        
+        // Habilitar botón solo cuando se ingrese contraseña
+        passwordInput.addEventListener('input', function() {
+            confirmBtn.disabled = this.value.length === 0;
+        });
+    });
+    
+    restoreModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const itemName = button.getAttribute('data-item-name');
+        document.getElementById('restore-item-name').textContent = itemName;
+    });
+    
+    deleteModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const itemName = button.getAttribute('data-item-name');
+        const itemType = button.getAttribute('data-item-type');
+        
+        document.getElementById('delete-item-name').textContent = itemName;
+        
+        // Limpiar campo de contraseña y habilitar/deshabilitar botón
+        const passwordInput = document.getElementById('delete-password');
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        const errorDiv = document.getElementById('delete-password-error');
+        
+        passwordInput.value = '';
+        confirmBtn.disabled = true;
+        errorDiv.style.display = 'none';
+        
+        // Habilitar botón solo cuando se ingrese contraseña
+        passwordInput.addEventListener('input', function() {
+            confirmBtn.disabled = this.value.length === 0;
+        });
+    });
+    
+    // Botón de confirmar limpiar todo
+    document.getElementById('confirmClearAllBtn').addEventListener('click', function() {
+        const password = document.getElementById('clear-password').value;
+        const errorDiv = document.getElementById('clear-password-error');
+        
+        if (!password) {
+            errorDiv.textContent = 'Debes ingresar la contraseña del super usuario';
+            errorDiv.style.display = 'block';
+            mostrarToast('Debes ingresar la contraseña del super usuario', 'error');
+            return;
+        }
+        
+        if (password.length < 3) {
+            errorDiv.textContent = 'La contraseña debe tener al menos 3 caracteres';
+            errorDiv.style.display = 'block';
+            mostrarToast('La contraseña debe tener al menos 3 caracteres', 'error');
+            return;
+        }
+        
+        mostrarToast('Limpiando papelera...', 'warning');
+        bootstrap.Modal.getInstance(document.getElementById('confirmClearAllModal')).hide();
+        
+        // Realizar petición AJAX al backend
+        fetch('/papelera/limpiar-todo/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || document.querySelector('meta[name=csrf-token]')?.content
+            },
+            body: `password=${encodeURIComponent(password)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                mostrarToast(data.message, 'success');
+                // Recargar la página para mostrar los cambios
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                mostrarToast(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarToast('Error al limpiar la papelera', 'error');
+        });
+    });
+    
+    // Botón de confirmar restaurar todo
+    document.getElementById('confirmRestoreAllBtn').addEventListener('click', function() {
+        mostrarToast('Restaurando elementos...', 'info');
+        bootstrap.Modal.getInstance(document.getElementById('confirmRestoreAllModal')).hide();
+        
+        // Realizar petición AJAX al backend
+        fetch('/papelera/restaurar-todo/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || document.querySelector('meta[name=csrf-token]')?.content
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                mostrarToast(data.message, 'success');
+                // Recargar la página para mostrar los cambios
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                mostrarToast(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarToast('Error al restaurar elementos', 'error');
+        });
+    });
+    
+    // Botón de confirmar restauración individual
+    document.getElementById('confirmRestoreBtn').addEventListener('click', function() {
+        const itemName = document.getElementById('restore-item-name').textContent;
+        const itemType = document.querySelector('.modal[data-item-name="' + itemName + '"]')?.getAttribute('data-item-type') || 
+                        document.querySelector('.item-card[data-name="' + itemName + '"]')?.getAttribute('data-type');
+        const itemId = document.querySelector('.item-card[data-name="' + itemName + '"]')?.getAttribute('data-item');
+        
+        if (!itemType || !itemId) {
+            mostrarToast('Error: No se pudo identificar el elemento', 'error');
+            return;
+        }
+        
+        mostrarToast('Restaurando elemento...', 'info');
+        bootstrap.Modal.getInstance(document.getElementById('confirmRestoreModal')).hide();
+        
+        // Determinar la URL correcta según el tipo
+        let url = '';
+        if (itemType === 'encuesta') {
+            url = `/papelera/restaurar_encuesta/${itemId}/`;
+        } else if (itemType === 'encuestado') {
+            url = `/encuestados/restaurar/${itemId}/`;
+        }
+        
+        // Realizar petición AJAX al backend
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || document.querySelector('meta[name=csrf-token]')?.content
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                mostrarToast(`"${itemName}" restaurado exitosamente`, 'success');
+                // Recargar la página para mostrar los cambios
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                mostrarToast('Error al restaurar el elemento', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarToast('Error al restaurar el elemento', 'error');
+        });
+    });
+    
+    // Botón de confirmar eliminación
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+        const password = document.getElementById('delete-password').value;
+        const errorDiv = document.getElementById('delete-password-error');
+        const itemName = document.getElementById('delete-item-name').textContent;
+        const itemType = document.querySelector('.item-card[data-name="' + itemName + '"]')?.getAttribute('data-type');
+        const itemId = document.querySelector('.item-card[data-name="' + itemName + '"]')?.getAttribute('data-item');
+        
+        if (!password) {
+            errorDiv.textContent = 'Debes ingresar la contraseña del super usuario';
+            errorDiv.style.display = 'block';
+            mostrarToast('Debes ingresar la contraseña del super usuario', 'error');
+            return;
+        }
+        
+        if (password.length < 3) {
+            errorDiv.textContent = 'La contraseña debe tener al menos 3 caracteres';
+            errorDiv.style.display = 'block';
+            mostrarToast('La contraseña debe tener al menos 3 caracteres', 'error');
+            return;
+        }
+        
+        if (!itemType || !itemId) {
+            mostrarToast('Error: No se pudo identificar el elemento', 'error');
+            return;
+        }
+        
+        bootstrap.Modal.getInstance(document.getElementById('confirmDeleteModal')).hide();
+        
+        // Determinar la URL correcta según el tipo
+        let url = '';
+        if (itemType === 'encuesta') {
+            url = `/papelera/eliminar_encuesta/${itemId}/`;
+        } else if (itemType === 'encuestado') {
+            url = `/encuestados/eliminar/${itemId}/`;
+        }
+        
+        // Realizar petición AJAX al backend
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || document.querySelector('meta[name=csrf-token]')?.content
+            },
+            body: `password=${encodeURIComponent(password)}`
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json().then(data => {
+                    if (data.success) {
+                        mostrarToast(data.message, 'success');
+                        // Recargar la página para mostrar los cambios
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        mostrarToast(data.message, 'error');
+                    }
+                });
+            } else {
+                // Si la respuesta no es JSON, intentar obtener el texto
+                return response.text().then(text => {
+                    mostrarToast('Error del servidor: ' + text, 'error');
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarToast('Error de conexión al eliminar el elemento', 'error');
+        });
+    });
+});
+
+function actualizarFecha() {
+    const ahora = new Date();
+    const opciones = {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    };
+    const fechaFormateada = ahora.toLocaleDateString('es-ES', opciones);
+    document.getElementById('currentDate').textContent = fechaFormateada;
+}
+
+// Función limpiarPapelera() ya no es necesaria - se maneja con el modal
+
+// Función restaurarTodo() ya no es necesaria - se maneja con el modal
+
+function exportarPapelera() {
+    mostrarToast('Generando reporte de papelera...', 'info');
+    
+    // Simular exportación
+    setTimeout(() => {
+        // Crear datos para exportar
+        const elementos = [];
+        document.querySelectorAll('.item-card').forEach(card => {
+            elementos.push({
+                nombre: card.getAttribute('data-name'),
+                tipo: card.getAttribute('data-type'),
+                fecha: new Date().toLocaleDateString()
+            });
+        });
+        
+        // Crear archivo CSV
+        let csvContent = "Nombre,Tipo,Fecha de Eliminación\n";
+        elementos.forEach(elemento => {
+            csvContent += `"${elemento.nombre}","${elemento.tipo}","${elemento.fecha}"\n`;
+        });
+        
+        // Descargar archivo
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `papelera_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        mostrarToast(`Reporte exportado exitosamente. ${elementos.length} elementos incluidos.`, 'success');
+    }, 2000);
+}
+
+function actualizarContadores() {
+    // Contar elementos visibles en la sección todos
+    const todosSection = document.getElementById('todos-section');
+    let visibleElements = 0;
+    let visibleEncuestas = 0;
+    let visibleEncuestados = 0;
+    
+    if (todosSection) {
+        // Contar elementos visibles
+        visibleElements = todosSection.querySelectorAll('.item-card[style*="block"], .item-card:not([style*="none"])').length;
+        visibleEncuestas = todosSection.querySelectorAll('.item-card[data-type="encuesta"][style*="block"], .item-card[data-type="encuesta"]:not([style*="none"])').length;
+        visibleEncuestados = todosSection.querySelectorAll('.item-card[data-type="encuestado"][style*="block"], .item-card[data-type="encuestado"]:not([style*="none"])').length;
+    }
+    
+    // Actualizar contador principal
+    document.querySelector('.info-text p').textContent = `Elementos temporales del sistema - ${visibleElements} elementos`;
+    
+    // Actualizar opciones del select con totales reales
+    const select = document.getElementById('categoria-filter');
+    const totalTodos = todosSection ? todosSection.querySelectorAll('.item-card').length : 0;
+    const totalEncuestas = todosSection ? todosSection.querySelectorAll('.item-card[data-type="encuesta"]').length : 0;
+    const totalEncuestados = todosSection ? todosSection.querySelectorAll('.item-card[data-type="encuestado"]').length : 0;
+    
+    select.options[0].text = `Todos (${totalTodos})`;
+    select.options[1].text = `Encuestas (${totalEncuestas})`;
+    select.options[2].text = `Encuestados (${totalEncuestados})`;
+}
+
+function mostrarToast(mensaje, tipo = 'success') {
+    const toastContainer = document.getElementById('toast-container');
+    
+    // Cerrar toasts existentes antes de mostrar uno nuevo
+    const existingToasts = toastContainer.querySelectorAll('.toast');
+    existingToasts.forEach(toast => {
+        const bsToast = bootstrap.Toast.getInstance(toast);
+        if (bsToast) {
+            bsToast.hide();
+        }
+        toast.remove();
+    });
+    
+    const toastId = 'toast-' + Date.now();
+    
+    const iconMap = {
+        success: 'bi-check-circle-fill',
+        error: 'bi-trash3-fill',
+        warning: 'bi-exclamation-triangle-fill',
+        info: 'bi-info-circle-fill'
+    };
+    
+    const toastHTML = `
+        <div id="${toastId}" class="toast custom-toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-content">
+                <i class="bi ${iconMap[tipo]} toast-icon"></i>
+                <span class="toast-message">${mensaje}</span>
+                <button type="button" class="btn-close toast-close" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+            </div>
+        </div>
+    `;
+    
+    toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+    
+    const toastElement = document.getElementById(toastId);
+    
+    // Aplicar estilo según el tipo
+    if (tipo === 'success') {
+        toastElement.style.backgroundColor = '#198754';
+        toastElement.style.borderColor = '#198754';
+    } else if (tipo === 'error') {
+        toastElement.style.backgroundColor = '#dc3545';
+        toastElement.style.borderColor = '#dc3545';
+    } else if (tipo === 'warning') {
+        toastElement.style.backgroundColor = '#ffc107';
+        toastElement.style.color = '#000';
+    } else if (tipo === 'info') {
+        toastElement.style.backgroundColor = '#0dcaf0';
+        toastElement.style.borderColor = '#0dcaf0';
+    }
+    
+    const toast = new bootstrap.Toast(toastElement, { delay: 4000 });
+    toast.show();
+    
+    toastElement.addEventListener('hidden.bs.toast', function() {
+        this.remove();
+    });
+}
+</script>
+
+<!-- Estilos CSS Minimalistas -->
+<style>
+/* Variables CSS */
+:root {
+    --primary-color: #22c55e;
+    --primary-dark: #16a34a;
+    --secondary-color: #64748b;
+    --danger-color: #ef4444;
+    --warning-color: #f59e0b;
+    --success-color: #10b981;
+    --background-color: #f8fafc;
+    --surface-color: #ffffff;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --border-color: #e2e8f0;
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Estilos personalizados para toasts */
+.custom-toast {
+    min-width: 280px !important;
+    max-width: 400px !important;
+    font-size: 14px !important;
+    padding: 0 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid transparent !important;
+}
+
+.toast-content {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    color: white;
+    font-weight: 500;
+}
+
+.toast-icon {
+    font-size: 16px;
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+.toast-message {
+    flex: 1;
+    line-height: 1.4;
+}
+
+.toast-close {
+    margin-left: 8px;
+    opacity: 0.8;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.toast-close:hover {
+    opacity: 1;
+}
+
+/* Reset y base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+/* Info Card */
+.info-card {
+    background: #2563eb; /* Azul */
+    border: none;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 1rem;
+    color: #fff; /* Letras blancas */
+}
+
+.info-text h3,
+.info-text p,
+.info-date {
+    color: #fff !important;
+}
+
+.info-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.info-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.info-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.info-text h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.info-text p {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.info-right {
+    text-align: right;
+}
+
+.info-date {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+
+/* Grid de elementos */
+.items-section {
+    display: none;
+}
+
+.items-section.active {
+    display: block;
+}
+
+.items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Tarjetas de elementos */
+.item-card {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow);
+}
+
+.item-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.item-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.125rem;
+}
+
+.status-badge {
+    background: var(--danger-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.item-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    cursor: help;
+    position: relative;
+}
+
+.item-title:hover {
+    overflow: visible;
+    white-space: normal;
+    word-break: break-word;
+    background: var(--surface-color);
+    padding: 0.25rem;
+    border-radius: 4px;
+    box-shadow: var(--shadow);
+    z-index: 10;
+}
+
+.item-description {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.item-details {
+    margin-bottom: 1.5rem;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.item-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.action-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.action-btn.restore {
+    background: var(--success-color);
+    color: white;
+}
+
+.action-btn.delete {
+    background: var(--danger-color);
+    color: white;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+/* Estado vacío */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--background-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    color: var(--text-secondary);
+    font-size: 2rem;
+}
+
+.empty-state h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+}
+
+/* Modales */
+.modal-content {
+    border: none;
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.5rem;
+}
+
+.modal-title {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.modal-body {
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.modal-icon {
+    width: 60px;
+    height: 60px;
+    background: var(--success-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.modal-icon.warning {
+    background: var(--danger-color);
+}
+
+.modal-question {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+}
+
+.modal-description {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.modal-item {
+    background: var(--background-color);
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.modal-footer {
+    border-top: 1px solid var(--border-color);
+    padding: 1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .info-content {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .info-left {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .items-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.item-card {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Toasts personalizados */
+.toast {
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+}
+</style>
+
+{% endblock %}
